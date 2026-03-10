@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cinematic Chord Explorer</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { min-height: 100vh; }
+    input[type="range"] { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 4px; outline: none; cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #ccc; cursor: pointer; border: none; }
+    input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #ccc; cursor: pointer; border: none; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+  <script type="text/babel">
+    const { useState, useRef, useEffect, useCallback } = React;
+
+
+const EMOTION_CONFIG = {
+  Hope: { color: "#D4A03C", bg: "linear-gradient(160deg, #5e5038 0%, #685840 30%, #5e5038 70%, #524830 100%)" },
+  Elation: { color: "#D9C02A", bg: "linear-gradient(160deg, #5e5a38 0%, #686240 30%, #5e5a38 70%, #525030 100%)" },
+  Romance: { color: "#C46080", bg: "linear-gradient(160deg, #5e3e4a 0%, #684856 30%, #5e4048 70%, #523640 100%)" },
+  Sadness: { color: "#7A8FA8", bg: "linear-gradient(160deg, #444a54 0%, #4e5660 30%, #464e58 70%, #3e4450 100%)" },
+  Epic: { color: "#A07CDC", bg: "linear-gradient(160deg, #504468 0%, #5a4c72 30%, #504468 70%, #463c5c 100%)" },
+  Tension: { color: "#C44040", bg: "linear-gradient(160deg, #5e3e3e 0%, #684646 30%, #5e4040 70%, #523636 100%)" },
+  Otherworldly: { color: "#5B7FA5", bg: "linear-gradient(160deg, #424e5e 0%, #4c5868 30%, #445060 70%, #3c4856 100%)" },
+  "Bittersweet Hope": { color: "#B89860", bg: "linear-gradient(160deg, #4a4230 0%, #544c38 30%, #4a4430 70%, #3e3828 100%)" },
+  Mystery: { color: "#8B7EC8", bg: "linear-gradient(160deg, #46405a 0%, #504a66 30%, #48425c 70%, #3e3852 100%)" },
+  Nostalgia: { color: "#C4956A", bg: "linear-gradient(160deg, #564838 0%, #605040 30%, #564838 70%, #4a3e30 100%)" },
+  Menace: { color: "#D05050", bg: "linear-gradient(160deg, #4a2828 0%, #563030 30%, #4a2a2a 70%, #402222 100%)" },
+  Whimsy: { color: "#5EAA80", bg: "linear-gradient(160deg, #364a40 0%, #40564a 30%, #384c42 70%, #304238 100%)" },
+};
+
+const PROGRESSIONS = [
+  // ========= HOPE =========
+  {
+    id: "hope-lydian", emotion: "Hope", name: "The Lydian Lift",
+    description: "The raised 4th of the Lydian mode creates that soaring, transcendent quality heard at the climax of E.T. and Superman.",
+    composer: "John Williams", film: "E.T., Superman",
+    chords: {
+      triad: [
+        { name: "C", notes: [48, 60, 64, 67], roman: "I" },
+        { name: "D/C", notes: [48, 62, 66, 69], roman: "II/I" },
+        { name: "C", notes: [48, 60, 64, 67], roman: "I" },
+        { name: "D/C", notes: [48, 62, 66, 69], roman: "II/I" },
+      ],
+      seventh: [
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "Imaj7" },
+        { name: "D9/C", notes: [48, 62, 66, 69, 73], roman: "II9/I" },
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "Imaj7" },
+        { name: "D9/C", notes: [48, 62, 66, 69, 73], roman: "II9/I" },
+      ],
+    },
+    triadNote: "Bold and definitive. The bare triad gives maximum clarity \u2014 the Lydian \u266f4 (F\u266f) hits with full force. This is the blockbuster version: confident, powerful. Williams uses triads in climactic brass because they cut through the orchestra cleanly.",
+    seventhNote: "The major 7th (B) on C adds a shimmering, dreamy quality. The 9th on D (E) creates extra lushness. More intimate \u2014 think strings and woodwinds at a reflective moment rather than the full brass fanfare.",
+    theory: "The Lydian mode raises the 4th degree by a half step. In C Lydian, F becomes F\u266f. This note appears in D major (D-F\u266f-A), which is why D over a C bass produces the Lydian sound. The raised 4th eliminates the natural pull downward, creating a sense of floating or ascending.",
+    color: "#D4A03C", duration: 2.0,
+  },
+  {
+    id: "hope-1564", emotion: "Hope", name: "The Hero's Journey",
+    description: "The I\u2013V\u2013vi\u2013IV arc moves from stability through tension to bittersweet reflection and warmth \u2014 the emotional backbone of countless triumphant scenes.",
+    composer: "Various", film: "Many soundtracks & pop songs",
+    chords: {
+      triad: [
+        { name: "C", notes: [48, 60, 64, 67], roman: "I" },
+        { name: "G", notes: [43, 55, 59, 62], roman: "V" },
+        { name: "Am", notes: [45, 57, 60, 64], roman: "vi" },
+        { name: "F", notes: [41, 53, 57, 60], roman: "IV" },
+      ],
+      seventh: [
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "Imaj7" },
+        { name: "G7", notes: [43, 55, 59, 62, 65], roman: "V7" },
+        { name: "Am7", notes: [45, 57, 60, 64, 67], roman: "vi7" },
+        { name: "Fmaj7", notes: [41, 53, 57, 60, 64], roman: "IVmaj7" },
+      ],
+    },
+    triadNote: "Clean and anthemic. Triads give each chord a distinct emotional stamp \u2014 V feels like genuine tension, vi drops into clear melancholy. The pop/rock version: punchy, singable, direct.",
+    seventhNote: "The 7ths change the character entirely. G7\u2019s tritone creates stronger pull to C. Am7 softens sadness into pensiveness. Fmaj7 shimmers. The 7ths make chords bleed into each other through shared tones.",
+    theory: "Each chord serves a dramatic function: I = home/safety, V = tension/anticipation, vi = vulnerability (the relative minor reveals the shadow side), IV = warmth/aspiration.",
+    color: "#C77D3A", duration: 1.8,
+  },
+  {
+    id: "hope-zimmer", emotion: "Hope", name: "Zimmer's Rising Arc",
+    description: "Inspired by \"Time\" from Inception. A Dorian progression building from introspection to catharsis.",
+    composer: "Hans Zimmer", film: "Inception",
+    chords: {
+      triad: [
+        { name: "Am", notes: [45, 57, 60, 64], roman: "i" },
+        { name: "Em", notes: [40, 52, 55, 59], roman: "v" },
+        { name: "G", notes: [43, 55, 59, 62], roman: "VII" },
+        { name: "D", notes: [50, 54, 57, 62], roman: "IV" },
+      ],
+      seventh: [
+        { name: "Am9", notes: [45, 57, 60, 64, 71], roman: "i9" },
+        { name: "Em7", notes: [40, 52, 55, 59, 62], roman: "v7" },
+        { name: "Gmaj7", notes: [43, 55, 59, 62, 66], roman: "VIImaj7" },
+        { name: "D7", notes: [50, 54, 57, 62, 66], roman: "IV7" },
+      ],
+    },
+    triadNote: "Zimmer\u2019s approach \u2014 massive, layered triads with every instrument doubling across octaves. Simplicity is the point: when 80 musicians play the same triad, overtones provide all the complexity needed.",
+    seventhNote: "Am9 creates a more jazz-inflected opening. Em7 flows smoothly. Gmaj7 with its F\u266f shimmers. This voicing works at lower volumes \u2014 the quiet, introspective beginning before triads take over at the climax.",
+    theory: "A Dorian (A-B-C-D-E-F\u266f-G) has a raised 6th \u2014 that F\u266f gives this bittersweet quality rather than pure sadness. The IV chord (D major, containing F\u266f) is the giveaway we\u2019re in Dorian, not Aeolian.",
+    color: "#B8863B", duration: 2.0,
+  },
+  {
+    id: "hope-extended", emotion: "Hope", name: "The Dawn Unfolds",
+    description: "A 6-chord arc tracing hope from its first fragile spark to full radiance. Moves through doubt, renewal, and arrival \u2014 the emotional shape of an entire character arc compressed into one phrase.",
+    composer: "John Williams, Thomas Newman", film: "Saving Private Ryan, Shawshank Redemption",
+    chords: {
+      triad: [
+        { name: "Am", notes: [45, 57, 60, 64], roman: "vi" },
+        { name: "F", notes: [41, 53, 57, 60], roman: "IV" },
+        { name: "C", notes: [48, 60, 64, 67], roman: "I" },
+        { name: "G", notes: [43, 55, 59, 62, 67], roman: "V" },
+        { name: "Am", notes: [45, 57, 60, 64], roman: "vi" },
+        { name: "C", notes: [48, 60, 64, 67, 72], roman: "I" },
+      ],
+      seventh: [
+        { name: "Am7", notes: [45, 57, 60, 64, 67], roman: "vi7" },
+        { name: "Fmaj7", notes: [41, 53, 57, 60, 64], roman: "IVmaj7" },
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "Imaj7" },
+        { name: "G7", notes: [43, 55, 59, 62, 65], roman: "V7" },
+        { name: "Am9", notes: [45, 57, 60, 64, 71], roman: "vi9" },
+        { name: "Cmaj9", notes: [48, 60, 64, 67, 71, 74], roman: "Imaj9" },
+      ],
+    },
+    triadNote: "Starting on vi (Am) is key \u2014 hope doesn\u2019t begin in certainty, it begins in shadow. IV offers the first warmth. I is the first true arrival, but V creates new tension. Returning to vi acknowledges the struggle isn\u2019t over. The final I, voiced higher, is hope realized.",
+    seventhNote: "Am7 softens the opening darkness. Fmaj7 glows. The Cmaj7 arrival feels gentler than a bare triad. G7\u2019s tritone pulls urgently. Am9 is open and vulnerable. The final Cmaj9 resolves with shimmering completeness \u2014 not just hope, but peace.",
+    theory: "This progression tells a story: vi starts in the relative minor (shadow), IV provides subdominant warmth (first light), I arrives (dawn), V creates dominant tension (doubt), vi returns (setback), and I resolves an octave higher (triumph). The arc mirrors the Hero\u2019s Journey structure. Starting and ending on different voicings of the same progression creates the sense that we\u2019ve been transformed by the journey.",
+    color: "#C4942A", duration: 1.4,
+  },
+
+  // ========= ELATION =========
+  {
+    id: "elation-major-climb", emotion: "Elation", name: "The Triumphant Climb",
+    description: "A I\u2013IV\u2013V\u2013I cadence in bright D major \u2014 the most fundamental expression of joy in Western music. Victory fanfares, coronation scenes, and pure celebration.",
+    composer: "John Williams, Alan Silvestri", film: "Star Wars, Back to the Future",
+    chords: {
+      triad: [
+        { name: "D", notes: [50, 62, 66, 69], roman: "I" },
+        { name: "G", notes: [43, 55, 59, 62, 67], roman: "IV" },
+        { name: "A", notes: [45, 57, 61, 64, 69], roman: "V" },
+        { name: "D", notes: [50, 62, 66, 69, 74], roman: "I" },
+      ],
+      seventh: [
+        { name: "Dmaj7", notes: [50, 62, 66, 69, 73], roman: "Imaj7" },
+        { name: "Gmaj9", notes: [43, 55, 59, 62, 66, 71], roman: "IVmaj9" },
+        { name: "A7", notes: [45, 57, 61, 64, 67], roman: "V7" },
+        { name: "Dmaj7", notes: [50, 62, 66, 69, 73], roman: "Imaj7" },
+      ],
+    },
+    triadNote: "Pure, ringing, decisive. When a full brass section lands on these, it\u2019s unambiguous victory. D major rings brilliantly on brass instruments. Feels like sunlight breaking through clouds.",
+    seventhNote: "The maj7 on D (C\u266f) adds a warm shimmer. Gmaj9 is lush. A7\u2019s dominant 7th creates a stronger gravitational pull back to D. The slow-motion montage of someone finally achieving their dream.",
+    theory: "The IV\u2013V\u2013I cadence is the strongest resolution in tonal music. IV creates lift, V creates maximum tension via the tritone between C\u266f and G in A7, and I provides home. D major is a favorite for triumphant brass because orchestral string open strings (D, A) reinforce the tonic.",
+    color: "#E0A830", duration: 1.7,
+  },
+  {
+    id: "elation-pachelbel", emotion: "Elation", name: "The Canon of Joy",
+    description: "Based on Pachelbel\u2019s Canon \u2014 a descending bass line that builds cumulative happiness through repetition, each cycle overflowing with more elation.",
+    composer: "Various (after Pachelbel)", film: "Weddings, montages, celebrations",
+    chords: {
+      triad: [
+        { name: "D", notes: [50, 62, 66, 69], roman: "I" },
+        { name: "A", notes: [45, 57, 61, 64], roman: "V" },
+        { name: "Bm", notes: [47, 59, 62, 66], roman: "vi" },
+        { name: "G", notes: [43, 55, 59, 62, 67], roman: "IV" },
+      ],
+      seventh: [
+        { name: "Dmaj7", notes: [50, 62, 66, 69, 73], roman: "Imaj7" },
+        { name: "A7", notes: [45, 57, 61, 64, 67], roman: "V7" },
+        { name: "Bm7", notes: [47, 59, 62, 66, 69], roman: "vi7" },
+        { name: "Gmaj7", notes: [43, 55, 59, 62, 66], roman: "IVmaj7" },
+      ],
+    },
+    triadNote: "Pure triads give each descent step a bell-like quality. When Bm appears, there\u2019s a fleeting sweetness-through-sadness \u2014 happiness so full it brings tears. The return to G is a deep exhale of contentment.",
+    seventhNote: "Less wedding march, more emotional montage. Dmaj7 glows. A7 leans forward. Bm7 softens the minor into wistfulness. Ideal for bittersweet happiness \u2014 reunions, nostalgia, earned joy.",
+    theory: "The magic is the descending bass: D \u2192 C\u266f (in A) \u2192 B \u2192 G. Stepwise descent creates inevitability and emotional accumulation. The vi chord (Bm) adds essential complexity \u2014 pure major can feel shallow, but this touch of minor makes the joy feel earned.",
+    color: "#D4B82E", duration: 1.6,
+  },
+  {
+    id: "elation-mixolydian", emotion: "Elation", name: "The Bright Swagger",
+    description: "A Mixolydian progression using the \u266dVII \u2014 less formal, more buoyant and carefree. Celebration scenes, road trips, and uninhibited happiness.",
+    composer: "Danny Elfman, Various", film: "Spider-Man, action comedies",
+    chords: {
+      triad: [
+        { name: "C", notes: [48, 60, 64, 67], roman: "I" },
+        { name: "B\u266d", notes: [46, 58, 62, 65], roman: "\u266dVII" },
+        { name: "F", notes: [41, 53, 57, 60, 65], roman: "IV" },
+        { name: "C", notes: [48, 60, 64, 67, 72], roman: "I" },
+      ],
+      seventh: [
+        { name: "C6/9", notes: [48, 60, 64, 67, 69, 74], roman: "I6/9" },
+        { name: "B\u266dmaj7", notes: [46, 58, 62, 65, 69], roman: "\u266dVIImaj7" },
+        { name: "F6", notes: [41, 53, 57, 60, 65, 69], roman: "IV6" },
+        { name: "C6/9", notes: [48, 60, 64, 67, 69, 74], roman: "I6/9" },
+      ],
+    },
+    triadNote: "The \u266dVII (B\u266d in C) gives this swagger. Instead of the leading tone pulling solemnly upward, the \u266d7 steps casually downward. Confident, not striving \u2014 a character who\u2019s already won and enjoying the moment.",
+    seventhNote: "C6/9 is one of the happiest chords in music \u2014 open, ringing, complete. B\u266dmaj7 adds warmth and jazz sophistication. Extensions turn swagger into radiance \u2014 sunrises, laughter, the final shot where everything worked out.",
+    theory: "Mixolydian lowers the 7th degree (B \u2192 B\u266d in C), eliminating the dominant function. The \u266dVII \u2192 IV \u2192 I is a plagal-style cadence that resolves through descent rather than tension \u2014 ease and inevitability rather than dramatic arrival.",
+    color: "#D9C02A", duration: 1.6,
+  },
+  {
+    id: "elation-extended", emotion: "Elation", name: "The Celebration Builds",
+    description: "A 7-chord arc that starts gently and builds to euphoria \u2014 the shape of a finale where every character gets their happy ending, one by one.",
+    composer: "Alan Menken, Patrick Doyle", film: "Beauty and the Beast finale, Sense and Sensibility",
+    chords: {
+      triad: [
+        { name: "G", notes: [43, 55, 59, 62, 67], roman: "I" },
+        { name: "Em", notes: [40, 52, 55, 59, 64], roman: "vi" },
+        { name: "C", notes: [48, 60, 64, 67], roman: "IV" },
+        { name: "D", notes: [50, 62, 66, 69], roman: "V" },
+        { name: "Em", notes: [52, 64, 67, 71], roman: "vi" },
+        { name: "C", notes: [48, 60, 64, 67], roman: "IV" },
+        { name: "G", notes: [43, 55, 59, 62, 67, 74], roman: "I" },
+      ],
+      seventh: [
+        { name: "Gmaj7", notes: [43, 55, 59, 62, 66], roman: "Imaj7" },
+        { name: "Em7", notes: [40, 52, 55, 59, 62], roman: "vi7" },
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "IVmaj7" },
+        { name: "D7", notes: [50, 62, 66, 69, 72], roman: "V7" },
+        { name: "Em9", notes: [52, 64, 67, 71, 78], roman: "vi9" },
+        { name: "Cmaj9", notes: [48, 60, 64, 67, 71, 74], roman: "IVmaj9" },
+        { name: "G6/9", notes: [43, 55, 59, 62, 66, 69], roman: "I6/9" },
+      ],
+    },
+    triadNote: "The double pass through vi\u2013IV is the key: the first time (chords 2\u20133) establishes the pattern, V creates anticipation, then vi\u2013IV returns higher and resolves with full confidence. The final G is voiced an octave higher than the opening \u2014 we\u2019ve ascended.",
+    seventhNote: "Gmaj7 opens with warmth. The second pass through Em9 and Cmaj9 is lusher than the first, creating the sensation of emotions overflowing. The final G6/9 is radiant and complete \u2014 the most resolved, satisfied chord possible.",
+    theory: "Longer progressions allow \u2018rhyming\u2019 \u2014 repeating a pattern (vi\u2013IV) at different points creates structural echoes. The first vi\u2013IV is the seed; V is the turning point; the second vi\u2013IV is the bloom. This A-B-A\u2019 structure mirrors how film scores build celebrations by restating themes at higher intensity.",
+    color: "#C0A820", duration: 1.3,
+  },
+
+  // ========= ROMANCE =========
+  {
+    id: "romance-yearning", emotion: "Romance", name: "The Yearning Heart",
+    description: "The I\u2013vi\u2013IV\u2013V progression with lush voicings \u2014 the classic sound of falling in love. Emotions building but not yet resolved.",
+    composer: "John Barry, James Horner", film: "Out of Africa, Titanic",
+    chords: {
+      triad: [
+        { name: "E\u266d", notes: [51, 63, 67, 70], roman: "I" },
+        { name: "Cm", notes: [48, 60, 63, 67], roman: "vi" },
+        { name: "A\u266d", notes: [44, 56, 60, 63, 68], roman: "IV" },
+        { name: "B\u266d", notes: [46, 58, 62, 65, 70], roman: "V" },
+      ],
+      seventh: [
+        { name: "E\u266dmaj7", notes: [51, 63, 67, 70, 74], roman: "Imaj7" },
+        { name: "Cm9", notes: [48, 60, 63, 67, 74], roman: "vi9" },
+        { name: "A\u266dmaj7", notes: [44, 56, 60, 63, 67], roman: "IVmaj7" },
+        { name: "B\u266dsus4", notes: [46, 58, 63, 65, 70], roman: "Vsus4" },
+      ],
+    },
+    triadNote: "In E\u266d major, this has a warm, rounded quality ideal for sweeping orchestral romance. The vi (Cm) introduces vulnerability \u2014 the moment you realize you\u2019re falling. V creates longing, pulling back toward the beginning.",
+    seventhNote: "The maj7 on E\u266d adds a dreamy shimmer. Cm9 is achingly tender. The Vsus4 is key: the suspended 4th hangs unresolved, like an unspoken confession. The sound of love not yet declared.",
+    theory: "E\u266d major is a favorite for romantic film scores because it sits in the warm range of orchestral instruments. The vi (relative minor) introduces vulnerability without full sadness. V creates dominant tension \u2014 longing for resolution \u2014 the harmonic equivalent of romantic desire.",
+    color: "#C46080", duration: 2.2,
+  },
+  {
+    id: "romance-borrowed", emotion: "Romance", name: "The Bittersweet Kiss",
+    description: "Using the borrowed iv chord to transform a sweet major progression into something achingly romantic \u2014 love tinged with the knowledge it won\u2019t last.",
+    composer: "Ennio Morricone", film: "Cinema Paradiso, The Mission",
+    chords: {
+      triad: [
+        { name: "F", notes: [41, 53, 57, 60, 65], roman: "I" },
+        { name: "Dm", notes: [50, 62, 65, 69], roman: "vi" },
+        { name: "B\u266dm", notes: [46, 58, 61, 65], roman: "iv" },
+        { name: "F", notes: [41, 53, 57, 60, 65], roman: "I" },
+      ],
+      seventh: [
+        { name: "Fmaj7", notes: [41, 53, 57, 60, 64], roman: "Imaj7" },
+        { name: "Dm7", notes: [50, 62, 65, 69, 72], roman: "vi7" },
+        { name: "B\u266dm(maj7)", notes: [46, 58, 61, 65, 69], roman: "iv(maj7)" },
+        { name: "Fmaj9", notes: [41, 53, 57, 60, 64, 67], roman: "Imaj9" },
+      ],
+    },
+    triadNote: "The iv chord (B\u266d minor) is the emotional centerpiece. In F major, IV would be B\u266d major. Borrowing from F minor gives B\u266dm instead \u2014 that single lowered note (D\u266d instead of D) transforms warmth into bittersweet ache.",
+    seventhNote: "B\u266dm(maj7) is extraordinarily poignant \u2014 the major 7th (A) shining against the minor triad creates luminous sadness. Fmaj9 resolves with a glow rather than finality. Morricone\u2019s specialty: beauty that hurts.",
+    theory: "The iv is borrowed from the parallel minor (F minor) via modal interchange. The lowered 3rd of iv (D\u266d instead of D) creates half-step tension against the tonic\u2019s major 3rd (A) \u2014 two worlds (major and minor) coexisting in one phrase.",
+    color: "#D06888", duration: 2.3,
+  },
+  {
+    id: "romance-mediant", emotion: "Romance", name: "The Chromatic Sigh",
+    description: "Chromatic mediant movement \u2014 chords a major 3rd apart sharing just one common tone. Creates a lush, swooning quality unique to cinematic romance.",
+    composer: "John Williams, Alan Menken", film: "Schindler's List, Beauty and the Beast",
+    chords: {
+      triad: [
+        { name: "C", notes: [48, 60, 64, 67], roman: "I" },
+        { name: "A\u266d", notes: [44, 56, 60, 63], roman: "\u266dVI" },
+        { name: "C", notes: [48, 60, 64, 67], roman: "I" },
+        { name: "E", notes: [52, 64, 68, 71], roman: "III\u266f" },
+      ],
+      seventh: [
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "Imaj7" },
+        { name: "A\u266dmaj7", notes: [44, 56, 60, 63, 67], roman: "\u266dVImaj7" },
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "Imaj7" },
+        { name: "Emaj7", notes: [52, 64, 68, 71, 75], roman: "III\u266fmaj7" },
+      ],
+    },
+    triadNote: "C to A\u266d is a downward chromatic mediant \u2014 warm, enveloping, like being swept off your feet. C to E is upward \u2014 bright, surprising, breathtaking. Together they create a swooning arc.",
+    seventhNote: "Maj7 on chromatic mediants creates additional common tones making distant leaps feel inevitable. A\u266dmaj7 contains G, linking to C. Emaj7 contains B, linking to Cmaj7. The 7ths turn surprise into destiny.",
+    theory: "Chromatic mediants are chords a major 3rd apart sharing one common tone. C and A\u266d share C. C and E share E. They come from different keys but the common tone acts as a bridge \u2014 perfect for the moment a character sees their beloved in a new light.",
+    color: "#B85878", duration: 2.1,
+  },
+  {
+    id: "romance-extended", emotion: "Romance", name: "The Love Theme",
+    description: "A 6-chord arc inspired by Morricone and Barry \u2014 love that begins tenderly, swells with passion, encounters a shadow of doubt, and resolves into deep intimacy.",
+    composer: "Ennio Morricone, John Barry", film: "Cinema Paradiso, Somewhere in Time",
+    chords: {
+      triad: [
+        { name: "E\u266d", notes: [51, 63, 67, 70], roman: "I" },
+        { name: "Cm", notes: [48, 60, 63, 67], roman: "vi" },
+        { name: "A\u266d", notes: [44, 56, 60, 63, 68], roman: "IV" },
+        { name: "A\u266dm", notes: [44, 56, 59, 63], roman: "iv" },
+        { name: "E\u266d", notes: [51, 63, 67, 70], roman: "I" },
+        { name: "B\u266d", notes: [46, 58, 62, 65, 70], roman: "V" },
+      ],
+      seventh: [
+        { name: "E\u266dmaj7", notes: [51, 63, 67, 70, 74], roman: "Imaj7" },
+        { name: "Cm9", notes: [48, 60, 63, 67, 74], roman: "vi9" },
+        { name: "A\u266dmaj7", notes: [44, 56, 60, 63, 67], roman: "IVmaj7" },
+        { name: "A\u266dm7", notes: [44, 56, 59, 63, 66], roman: "iv7" },
+        { name: "E\u266dmaj9", notes: [51, 63, 67, 70, 74, 77], roman: "Imaj9" },
+        { name: "B\u266dsus4", notes: [46, 58, 63, 65, 70], roman: "Vsus4" },
+      ],
+    },
+    triadNote: "The 6-chord arc allows for the IV \u2192 iv moment (A\u266d major to A\u266d minor) that is impossible in 4 chords without sacrificing the setup. That single lowered note (C to C\u266d) is the emotional climax \u2014 love becoming bittersweet. V at the end leaves the phrase open, yearning for the next cycle.",
+    seventhNote: "E\u266dmaj7 is tenderness itself. Cm9 aches. A\u266dmaj7 swells. Then A\u266dm7 \u2014 the borrowed iv \u2014 with its C\u266d darkens everything. E\u266dmaj9 returns but now we\u2019ve been changed. B\u266dsus4 refuses full resolution, leaving desire hanging in the air.",
+    theory: "The IV \u2192 iv (major to borrowed minor) is the emotional hinge. In 4 chords you must choose between building the setup or delivering the twist. With 6, you get both: I\u2013vi\u2013IV establishes warmth before iv shatters it. This is modal interchange at its most expressive \u2014 two parallel universes (E\u266d major and E\u266d minor) briefly colliding.",
+    color: "#A04868", duration: 1.5,
+  },
+
+  // ========= SADNESS =========
+  {
+    id: "sadness-descending", emotion: "Sadness", name: "The Falling Tears",
+    description: "A descending bass line through minor territory \u2014 the most primal expression of grief in music. Gravity pulls everything downward, mirroring the weight of loss.",
+    composer: "Thomas Newman, Various", film: "American Beauty, Hurt (Johnny Cash)",
+    chords: {
+      triad: [
+        { name: "Am", notes: [45, 57, 60, 64], roman: "i" },
+        { name: "Am/G", notes: [43, 57, 60, 64], roman: "i/\u266d7" },
+        { name: "F", notes: [41, 53, 57, 60], roman: "VI" },
+        { name: "E", notes: [40, 52, 56, 59, 64], roman: "V" },
+      ],
+      seventh: [
+        { name: "Am9", notes: [45, 57, 60, 64, 71], roman: "i9" },
+        { name: "Am7/G", notes: [43, 57, 60, 64, 67], roman: "i7/\u266d7" },
+        { name: "Fmaj7", notes: [41, 53, 57, 60, 64], roman: "VImaj7" },
+        { name: "E7", notes: [40, 52, 56, 59, 62], roman: "V7" },
+      ],
+    },
+    triadNote: "The descending bass (A \u2192 G \u2192 F \u2192 E) creates inexorable downward pull. Each step feels like another stage of grief. The E major at the end (G\u266f) creates a glimmer of major that makes the minor context even more painful.",
+    seventhNote: "Am9\u2019s added B creates haunting openness. Am7/G blurs the tonal center. Fmaj7 shimmers with false hope. E7 with its D sounds like desperate reaching for something lost.",
+    theory: "Descending bass lines are a lament pattern dating to the Baroque era. The descent mirrors emotional collapse. The V chord (E major with G\u266f) uses harmonic minor \u2014 the raised 7th creates longing for resolution, but returning to Am just restarts the cycle of grief.",
+    color: "#7A8FA8", duration: 2.3,
+  },
+  {
+    id: "sadness-deceptive", emotion: "Sadness", name: "The Broken Promise",
+    description: "A deceptive cadence \u2014 the music leads you to expect resolution but lands somewhere heartbreaking instead. The harmonic equivalent of hopes being dashed.",
+    composer: "Michael Giacchino", film: "Up (Married Life), Inside Out",
+    chords: {
+      triad: [
+        { name: "G", notes: [43, 55, 59, 62, 67], roman: "I" },
+        { name: "D", notes: [50, 62, 66, 69], roman: "V" },
+        { name: "Em", notes: [52, 64, 67, 71], roman: "vi" },
+        { name: "C", notes: [48, 60, 64, 67], roman: "IV" },
+      ],
+      seventh: [
+        { name: "Gmaj7", notes: [43, 55, 59, 62, 66], roman: "Imaj7" },
+        { name: "D7", notes: [50, 62, 66, 69, 72], roman: "V7" },
+        { name: "Em7", notes: [52, 64, 67, 71, 74], roman: "vi7" },
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "IVmaj7" },
+      ],
+    },
+    triadNote: "V creates maximum expectation of returning to I. Instead we land on vi \u2014 the deceptive cadence. Same notes as G major rearranged into sadness. IV refuses to resolve, leaving us suspended in melancholy.",
+    seventhNote: "D7\u2019s tritone (F\u266f\u2013C) screams for resolution to G, making the deceptive landing on Em7 even more poignant. Em7 is gentle rather than stark. Cmaj7 creates a bittersweet near-resolution that never quite arrives.",
+    theory: "The deceptive cadence (V \u2192 vi instead of V \u2192 I) works because vi shares two notes with I \u2014 close enough to feel like resolution but different enough to feel wrong. Giacchino uses this in Up\u2019s \u2018Married Life\u2019 to devastating effect.",
+    color: "#6B82A0", duration: 2.0,
+  },
+  {
+    id: "sadness-unresolved", emotion: "Sadness", name: "The Endless Ache",
+    description: "A progression that deliberately avoids closure \u2014 cycling through minor chords without ever truly arriving home. Grief that has no resolution.",
+    composer: "Hans Zimmer, Ryuichi Sakamoto", film: "Interstellar, The Revenant",
+    chords: {
+      triad: [
+        { name: "Dm", notes: [50, 62, 65, 69], roman: "i" },
+        { name: "B\u266d", notes: [46, 58, 62, 65], roman: "VI" },
+        { name: "Gm", notes: [43, 55, 58, 62, 67], roman: "iv" },
+        { name: "A", notes: [45, 57, 61, 64], roman: "V" },
+      ],
+      seventh: [
+        { name: "Dm9", notes: [50, 62, 65, 69, 76], roman: "i9" },
+        { name: "B\u266dmaj7", notes: [46, 58, 62, 65, 69], roman: "VImaj7" },
+        { name: "Gm7", notes: [43, 55, 58, 62, 65], roman: "iv7" },
+        { name: "A7sus4", notes: [45, 57, 62, 64, 69], roman: "V7sus4" },
+      ],
+    },
+    triadNote: "Dm to B\u266d opens a window of warmth, but Gm immediately pulls back into shadow. A major creates longing, but returning to Dm changes nothing. The cycle of sorrow continues.",
+    seventhNote: "Dm9 is open and hollow. B\u266dmaj7 glows with fleeting hope. Gm7 is resignation. A7sus4 \u2014 suspended 4th refusing a proper dominant \u2014 creates pull without the decisive leading tone, so resolution feels exhausted rather than conclusive.",
+    theory: "This works in D natural minor (Aeolian). V is major (A, borrowing C\u266f from harmonic minor) but the sus4 weakens the pull. VI (B\u266d) briefly suggests escape from minor, but iv (Gm) closes the door.",
+    color: "#8898B0", duration: 2.4,
+  },
+  {
+    id: "sadness-extended", emotion: "Sadness", name: "The Long Goodbye",
+    description: "A 7-chord arc tracing the full shape of grief: numbness, a flash of memory, the collapse, and finally a hollow acceptance. Inspired by Giacchino\u2019s \u2018Married Life\u2019 from Up.",
+    composer: "Michael Giacchino, Alexandre Desplat", film: "Up, The Painted Veil",
+    chords: {
+      triad: [
+        { name: "G", notes: [43, 55, 59, 62], roman: "I" },
+        { name: "D", notes: [50, 62, 66, 69], roman: "V" },
+        { name: "Em", notes: [40, 52, 55, 59, 64], roman: "vi" },
+        { name: "C", notes: [48, 60, 64, 67], roman: "IV" },
+        { name: "Cm", notes: [48, 60, 63, 67], roman: "iv" },
+        { name: "G", notes: [43, 55, 59, 62], roman: "I" },
+        { name: "D", notes: [38, 50, 54, 57], roman: "V" },
+      ],
+      seventh: [
+        { name: "Gmaj7", notes: [43, 55, 59, 62, 66], roman: "Imaj7" },
+        { name: "D7", notes: [50, 62, 66, 69, 72], roman: "V7" },
+        { name: "Em7", notes: [40, 52, 55, 59, 62], roman: "vi7" },
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "IVmaj7" },
+        { name: "Cm(maj7)", notes: [48, 60, 63, 67, 71], roman: "iv(maj7)" },
+        { name: "Gmaj7", notes: [43, 55, 59, 62, 66], roman: "Imaj7" },
+        { name: "D9", notes: [38, 50, 54, 57, 64], roman: "V9" },
+      ],
+    },
+    triadNote: "The first I\u2013V sounds like a happy beginning \u2014 that\u2019s intentional. The deceptive turn to vi is where memory turns to loss. IV offers comfort but then iv (C minor, borrowed) darkens it devastatingly. The return to I feels emptied out. The low V at the end reaches upward but can\u2019t quite get there.",
+    seventhNote: "Gmaj7 opens with false warmth. D7 pulls hopefully. Em7 is the gentle collapse. Cmaj7 shimmers with memory. Then Cm(maj7) \u2014 the B natural against E\u266d is one of the most heartbreaking sounds in music, a major 7th trapped inside a minor chord. The final D9 is unresolved longing.",
+    theory: "The IV \u2192 iv shift (C major to C minor) is the emotional core. With 7 chords you can set up a full happy arc (I\u2013V\u2013vi\u2013IV) before destroying it with the borrowed iv. This is exactly Giacchino\u2019s technique in Up: he establishes a joyful theme, then uses modal interchange to transform it into grief without changing the melody.",
+    color: "#6878A0", duration: 1.4,
+  },
+
+  // ========= EPIC =========
+  {
+    id: "epic-pirates", emotion: "Epic", name: "The Pirate's Anthem",
+    description: "The i\u2013VI\u2013III\u2013VII progression \u2014 the quintessential epic cycle. The natural minor\u2019s major chords create unstoppable forward momentum.",
+    composer: "Hans Zimmer, Klaus Badelt", film: "Pirates of the Caribbean",
+    chords: {
+      triad: [
+        { name: "Dm", notes: [50, 62, 65, 69], roman: "i" },
+        { name: "B\u266d", notes: [46, 58, 62, 65, 70], roman: "VI" },
+        { name: "F", notes: [41, 53, 57, 60, 65], roman: "III" },
+        { name: "C", notes: [48, 60, 64, 67], roman: "VII" },
+      ],
+      seventh: [
+        { name: "Dm(add9)", notes: [50, 62, 65, 69, 76], roman: "i(add9)" },
+        { name: "B\u266d(add9)", notes: [46, 58, 62, 65, 72], roman: "VI(add9)" },
+        { name: "Fmaj7", notes: [41, 53, 57, 60, 64], roman: "IIImaj7" },
+        { name: "C(add9)", notes: [48, 60, 64, 67, 74], roman: "VII(add9)" },
+      ],
+    },
+    triadNote: "Full orchestra with driving rhythm \u2014 the definition of cinematic epic. Dm sets dark heroism. B\u266d opens it up. F is the lift. C is the peak, hovering before plunging back. Relentless and unstoppable.",
+    seventhNote: "Add9 extensions soften aggression slightly, adding a sheen of nobility. Fmaj7 is where epicness gains a hint of beauty. These voicings work for grandeur rather than just intensity.",
+    theory: "Uses only chords from D natural minor (Aeolian). No true dominant (V) means it never resolves \u2014 it cycles endlessly, creating relentless momentum. Rising root motion (D \u2192 B\u266d \u2192 F \u2192 C) through major chords creates ascending power.",
+    color: "#A07CDC", duration: 1.5,
+  },
+  {
+    id: "epic-gladiator", emotion: "Epic", name: "The Noble Sacrifice",
+    description: "Less about speed, more about weight \u2014 ancient empires and noble tragedy. The sound of a hero who knows the cost of duty.",
+    composer: "Hans Zimmer, Lisa Gerrard", film: "Gladiator, The Last Samurai",
+    chords: {
+      triad: [
+        { name: "Am", notes: [45, 57, 60, 64], roman: "i" },
+        { name: "F", notes: [41, 53, 57, 60, 65], roman: "VI" },
+        { name: "Dm", notes: [50, 62, 65, 69], roman: "iv" },
+        { name: "E", notes: [40, 52, 56, 59, 64], roman: "V" },
+      ],
+      seventh: [
+        { name: "Am(add9)", notes: [45, 57, 60, 64, 71], roman: "i(add9)" },
+        { name: "Fmaj7", notes: [41, 53, 57, 60, 64], roman: "VImaj7" },
+        { name: "Dm9", notes: [50, 62, 65, 69, 76], roman: "iv9" },
+        { name: "E7", notes: [40, 52, 56, 59, 62], roman: "V7" },
+      ],
+    },
+    triadNote: "Slower and heavier. Am is solemnity. F opens like a cathedral ceiling. Dm draws inward. E major\u2019s raised G\u266f creates fierce, almost painful longing. This is sacrifice, not adventure.",
+    seventhNote: "Am(add9) with B is open and vulnerable. Fmaj7 glows with borrowed light. Dm9 is expansive sorrow. E7 adds a darker pull making resolution to Am feel not triumphant but inevitable \u2014 duty that must be fulfilled.",
+    theory: "i\u2013VI\u2013iv\u2013V moves through tragedy\u2019s landscape: identity (i), fleeting glory (VI), grief (iv), and fate (V). V borrows G\u266f from harmonic minor, creating the leading tone that pulls inexorably back. This pull IS the nobility.",
+    color: "#9070C0", duration: 2.2,
+  },
+  {
+    id: "epic-power", emotion: "Epic", name: "The War March",
+    description: "Phrygian \u266dII in minor \u2014 aggressive, dark, imposing. Armies gathering and battles beginning.",
+    composer: "Howard Shore, Ramin Djawadi", film: "Lord of the Rings, Game of Thrones",
+    chords: {
+      triad: [
+        { name: "Em", notes: [40, 52, 55, 59, 64], roman: "i" },
+        { name: "F", notes: [41, 53, 57, 60], roman: "\u266dII" },
+        { name: "Em", notes: [40, 52, 55, 59, 64], roman: "i" },
+        { name: "D", notes: [50, 62, 66, 69], roman: "VII" },
+      ],
+      seventh: [
+        { name: "Em(add9)", notes: [40, 52, 55, 59, 66], roman: "i(add9)" },
+        { name: "Fmaj7", notes: [41, 53, 57, 60, 64], roman: "\u266dIImaj7" },
+        { name: "Em7", notes: [40, 52, 55, 59, 62], roman: "i7" },
+        { name: "D(add9)", notes: [50, 62, 66, 69, 76], roman: "VII(add9)" },
+      ],
+    },
+    triadNote: "The \u266dII (F in E minor) is Phrygian color \u2014 that half-step E to F is one of the darkest moves in Western harmony. Ancient, menacing. VII (D) provides relief before the cycle plunges back.",
+    seventhNote: "Em(add9) adds F\u266f which subtly conflicts with the incoming F natural, creating extra tension. Fmaj7 has a surprising beauty \u2014 the E in Fmaj7 connects back to Em, making menace feel inevitable.",
+    theory: "Phrygian\u2019s defining feature is its \u266d2 (F in E Phrygian). The half-step above the tonic creates maximum gravitational tension \u2014 like standing on a cliff\u2019s edge. Shore uses Phrygian for Mordor. Djawadi uses it for the Night King and battle themes.",
+    color: "#B088E0", duration: 1.8,
+  },
+  {
+    id: "epic-extended", emotion: "Epic", name: "The Kingdom Rises",
+    description: "An 8-chord epic cycle that builds from brooding darkness through ascending power to a blazing climax \u2014 the full arc of a battle scene or coronation.",
+    composer: "Howard Shore, Hans Zimmer", film: "Lord of the Rings: Return of the King, Man of Steel",
+    chords: {
+      triad: [
+        { name: "Dm", notes: [50, 62, 65, 69], roman: "i" },
+        { name: "B\u266d", notes: [46, 58, 62, 65], roman: "VI" },
+        { name: "Gm", notes: [43, 55, 58, 62, 67], roman: "iv" },
+        { name: "A", notes: [45, 57, 61, 64], roman: "V" },
+        { name: "Dm", notes: [50, 62, 65, 69], roman: "i" },
+        { name: "F", notes: [41, 53, 57, 60, 65], roman: "III" },
+        { name: "C", notes: [48, 60, 64, 67], roman: "VII" },
+        { name: "Dm", notes: [50, 62, 65, 69, 74], roman: "i" },
+      ],
+      seventh: [
+        { name: "Dm(add9)", notes: [50, 62, 65, 69, 76], roman: "i(add9)" },
+        { name: "B\u266dmaj7", notes: [46, 58, 62, 65, 69], roman: "VImaj7" },
+        { name: "Gm7", notes: [43, 55, 58, 62, 65], roman: "iv7" },
+        { name: "A7", notes: [45, 57, 61, 64, 67], roman: "V7" },
+        { name: "Dm9", notes: [50, 62, 65, 69, 76], roman: "i9" },
+        { name: "Fmaj7", notes: [41, 53, 57, 60, 64], roman: "IIImaj7" },
+        { name: "C(add9)", notes: [48, 60, 64, 67, 74], roman: "VII(add9)" },
+        { name: "Dm", notes: [50, 62, 65, 69, 74], roman: "i" },
+      ],
+    },
+    triadNote: "Two halves: the first four chords (i\u2013VI\u2013iv\u2013V) brood and build through the minor landscape. V creates a decisive turning point. Then i\u2013III\u2013VII ascends through the relative major territory \u2014 this is where the army crests the hill. The final i, voiced high, is victory forged in darkness.",
+    seventhNote: "Extensions add nobility to what could otherwise be purely aggressive. B\u266dmaj7 gives grandeur to VI. Gm7 softens iv into tragic beauty. Fmaj7 and C(add9) in the ascending second half create shimmering power. The final bare Dm triad strips away the lushness \u2014 back to raw strength.",
+    theory: "The two-part structure (4+4) mirrors the dramatic structure of epic battle music: build tension, then release it. The first half stays in D minor\u2019s darker chords (i, iv, V). The second half ascends through the relative major (F, C) before returning to i. This major detour within a minor key is how Shore creates the feeling of light emerging from shadow in the Gondor themes.",
+    color: "#8868C0", duration: 1.2,
+  },
+
+  // ========= TENSION =========
+  {
+    id: "tension-halfstep", emotion: "Tension", name: "The Creeping Dread",
+    description: "Two minor chords a half-step apart \u2014 the simplest and most effective suspense device in film scoring. The semitone shift creates primal unease.",
+    composer: "John Williams, Bernard Herrmann", film: "Jaws, Psycho",
+    chords: {
+      triad: [
+        { name: "Em", notes: [40, 52, 55, 59], roman: "i" },
+        { name: "Fm", notes: [41, 53, 56, 60], roman: "\u266dii" },
+        { name: "Em", notes: [40, 52, 55, 59], roman: "i" },
+        { name: "Fm", notes: [41, 53, 56, 60], roman: "\u266dii" },
+      ],
+      seventh: [
+        { name: "Em7", notes: [40, 52, 55, 59, 62], roman: "i7" },
+        { name: "Fm(maj7)", notes: [41, 53, 56, 60, 64], roman: "\u266dii(maj7)" },
+        { name: "Em7", notes: [40, 52, 55, 59, 62], roman: "i7" },
+        { name: "Fm(maj7)", notes: [41, 53, 56, 60, 64], roman: "\u266dii(maj7)" },
+      ],
+    },
+    triadNote: "These two chords share zero common tones \u2014 every note shifts by a half step. This total displacement is deeply unsettling. The oscillation creates a rocking, unstable sensation. Jaws\u2019 motif is built on exactly this principle.",
+    seventhNote: "Fm(maj7) adds E natural \u2014 the root of Em \u2014 so one chord now contains a ghost of the other. Uncanny and disorienting. Em7 with its D blurs boundaries further. The 7ths make suspense more psychological, less primal.",
+    theory: "Minor chords a half-step apart share no common tones, which is why the shift feels jarring. Our ears have no smooth path between them. Herrmann pioneered this in Psycho. It exploits our expectation of smooth voice leading \u2014 when every note jumps, our brain registers danger.",
+    color: "#C44040", duration: 2.5,
+  },
+  {
+    id: "tension-diminished", emotion: "Tension", name: "The Tightening Noose",
+    description: "Diminished chord movement \u2014 climbing by minor thirds with no clear destination. The harmonic equivalent of walls closing in.",
+    composer: "Danny Elfman, Howard Shore", film: "Batman, Silence of the Lambs",
+    chords: {
+      triad: [
+        { name: "Cm", notes: [48, 60, 63, 67], roman: "i" },
+        { name: "C\u00b0", notes: [48, 60, 63, 66], roman: "i\u00b0" },
+        { name: "D\u266d", notes: [49, 61, 65, 68], roman: "\u266dII" },
+        { name: "Cm", notes: [48, 60, 63, 67], roman: "i" },
+      ],
+      seventh: [
+        { name: "Cm7", notes: [48, 60, 63, 67, 70], roman: "i7" },
+        { name: "C\u00b07", notes: [48, 60, 63, 66, 69], roman: "i\u00b07" },
+        { name: "D\u266dmaj7", notes: [49, 61, 65, 68, 72], roman: "\u266dIImaj7" },
+        { name: "Cm(maj7)", notes: [48, 60, 63, 67, 71], roman: "i(maj7)" },
+      ],
+    },
+    triadNote: "The diminished chord (C\u00b0) is built entirely of minor thirds \u2014 symmetrical with no clear root, creating total ambiguity. Moving to D\u266d via the diminished makes chromatic ascent feel inevitable yet shocking.",
+    seventhNote: "The fully diminished 7th divides the octave into four equal parts \u2014 the most ambiguous chord possible. D\u266dmaj7 has eerie beauty. Cm(maj7) is the James Bond chord \u2014 we\u2019re home, but something is deeply wrong.",
+    theory: "Diminished chords are symmetrical (all minor 3rds), so they can resolve to four keys equally \u2014 the ultimate pivot chord for disorientation. Cm \u2192 C\u00b0 \u2192 D\u266d uses the diminished as a stepping stone, ratcheting tension a half-step at a time.",
+    color: "#D04848", duration: 2.3,
+  },
+  {
+    id: "tension-pedal", emotion: "Tension", name: "The Static Menace",
+    description: "A sustained bass (pedal tone) with shifting, dissonant chords above \u2014 the Stranger Things approach. The bass refuses to move, trapping us in unease.",
+    composer: "Kyle Dixon & Michael Stein, Cliff Martinez", film: "Stranger Things, Drive",
+    chords: {
+      triad: [
+        { name: "Cm", notes: [36, 48, 60, 63, 67], roman: "i" },
+        { name: "D\u266d/C", notes: [36, 48, 61, 65, 68], roman: "\u266dII/1" },
+        { name: "Cm", notes: [36, 48, 60, 63, 67], roman: "i" },
+        { name: "A\u266d/C", notes: [36, 48, 56, 60, 63], roman: "VI/1" },
+      ],
+      seventh: [
+        { name: "Cm9", notes: [36, 48, 60, 63, 67, 74], roman: "i9" },
+        { name: "D\u266dmaj7/C", notes: [36, 48, 61, 65, 68, 72], roman: "\u266dIImaj7/1" },
+        { name: "Cm(add11)", notes: [36, 48, 60, 63, 65, 67], roman: "i(add11)" },
+        { name: "A\u266dmaj7/C", notes: [36, 48, 56, 60, 63, 67], roman: "VImaj7/1" },
+      ],
+    },
+    triadNote: "The low C never moves. D\u266d/C is especially unsettling \u2014 D\u266d rubs against C a half-step away. This is dread from almost nothing: lock the bass and let harmony twist above it.",
+    seventhNote: "Extensions add more notes for the static C to clash against. Cm(add11) stacks F against E\u266d \u2014 a crunchy cluster. D\u266dmaj7/C has C in both bass and chord but in different harmonic contexts. Everything becomes more claustrophobic.",
+    theory: "Pedal tones create conflict between static bass (anchoring us) and moving harmonies (unsettling us). Our ear simultaneously holds the C as \u2018home\u2019 and hears clashing intervals above. This dual awareness is the essence of suspense \u2014 knowing where you are but not what\u2019s coming.",
+    color: "#B83838", duration: 2.6,
+  },
+  {
+    id: "tension-extended", emotion: "Tension", name: "The Descent Into Madness",
+    description: "A 7-chord arc that builds from unease to full terror \u2014 the shape of a horror scene where each new sound design layer ratchets the dread higher until the inevitable shock.",
+    composer: "Bernard Herrmann, Krzysztof Penderecki", film: "Psycho, The Shining, There Will Be Blood",
+    chords: {
+      triad: [
+        { name: "Em", notes: [40, 52, 55, 59], roman: "i" },
+        { name: "Fm", notes: [41, 53, 56, 60], roman: "\u266dii" },
+        { name: "Em", notes: [40, 52, 55, 59], roman: "i" },
+        { name: "E\u266d\u00b0", notes: [39, 51, 54, 57], roman: "vii\u00b0" },
+        { name: "Cm", notes: [48, 60, 63, 67], roman: "vi" },
+        { name: "D\u266d", notes: [49, 61, 65, 68], roman: "\u266dVII" },
+        { name: "Em", notes: [40, 52, 55, 59, 64], roman: "i" },
+      ],
+      seventh: [
+        { name: "Em7", notes: [40, 52, 55, 59, 62], roman: "i7" },
+        { name: "Fm(maj7)", notes: [41, 53, 56, 60, 64], roman: "\u266dii(maj7)" },
+        { name: "Em9", notes: [40, 52, 55, 59, 66], roman: "i9" },
+        { name: "E\u266d\u00b07", notes: [39, 51, 54, 57, 60], roman: "vii\u00b07" },
+        { name: "Cm(maj7)", notes: [48, 60, 63, 67, 71], roman: "vi(maj7)" },
+        { name: "D\u266dmaj7", notes: [49, 61, 65, 68, 72], roman: "\u266dVIImaj7" },
+        { name: "Em(add\u266d9)", notes: [40, 52, 55, 59, 65], roman: "i(add\u266d9)" },
+      ],
+    },
+    triadNote: "The 7-chord arc allows the tension to build in stages rather than oscillating. Em\u2192Fm is the first warning. Returning to Em provides false safety. The diminished chord collapses the floor. Cm and D\u266d spiral away from home. The final Em return feels haunted by everything we\u2019ve passed through.",
+    seventhNote: "The extensions weaponize each chord. Fm(maj7) adds E natural \u2014 a ghost of the tonic inside the threat. The fully diminished 7th is maximally ambiguous. Cm(maj7) is the James Bond chord \u2014 menacing beauty. The final Em(add\u266d9) ends with F natural against E, leaving the dissonance permanently unresolved.",
+    theory: "This arc uses escalating harmonic distance: the half-step (Em\u2192Fm), then the diminished chord (symmetrical ambiguity), then chromatic mediants (Cm, D\u266d) that pull us far from the tonic. Each stage removes more tonal grounding. The return to Em doesn\u2019t feel like resolution \u2014 it feels like the monster followed you home. Herrmann understood that the scariest moment is after the tension breaks, not during it.",
+    color: "#A03030", duration: 1.8,
+  },
+
+  // ========= OTHERWORLDLY =========
+  {
+    id: "otherworld-chromatic", emotion: "Otherworldly", name: "The Chromatic Drift",
+    description: "Chords connected by common tones rather than key relationships \u2014 Shore\u2019s Lord of the Rings hallmark and much of Williams\u2019 fantasy writing.",
+    composer: "Howard Shore", film: "Lord of the Rings",
+    chords: {
+      triad: [
+        { name: "Cm", notes: [48, 60, 63, 67], roman: "i" },
+        { name: "A\u266d", notes: [44, 56, 60, 63], roman: "\u266dVI" },
+        { name: "E", notes: [40, 52, 56, 59], roman: "\u266dIII\u266f" },
+        { name: "Cm", notes: [48, 60, 63, 67], roman: "i" },
+      ],
+      seventh: [
+        { name: "Cm(maj7)", notes: [48, 60, 63, 67, 71], roman: "i(maj7)" },
+        { name: "A\u266dmaj7", notes: [44, 56, 60, 63, 67], roman: "\u266dVImaj7" },
+        { name: "Emaj7", notes: [40, 52, 56, 59, 63], roman: "\u266dIII\u266fmaj7" },
+        { name: "Cm9", notes: [48, 60, 63, 67, 74], roman: "i9" },
+      ],
+    },
+    triadNote: "Stark and ancient. Each triad rings clearly \u2014 distant key relationships laid bare. Shore uses this for Rivendell and the great vistas of Middle-earth \u2014 awe and grandeur.",
+    seventhNote: "The minor-major 7th on Cm (B against C-E\u266d-G) is one of the most mysterious sounds in harmony. Adding 7ths creates more common tones, making distant jumps feel seamless and dreamlike.",
+    theory: "These chords come from three different keys yet flow naturally through shared notes. Cm and A\u266d share C and E\u266d. A\u266d and E share almost nothing \u2014 that transition feels especially magical. Neo-Riemannian theory describes these as L, P, and R transformations.",
+    color: "#5B7FA5", duration: 2.2,
+  },
+  {
+    id: "otherworld-maj-min", emotion: "Otherworldly", name: "The Mirror Shift",
+    description: "The I \u2192 iv borrowed chord \u2014 Williams\u2019 signature for transforming the familiar into the magical. One lowered note changes everything.",
+    composer: "John Williams", film: "Star Wars, Harry Potter",
+    chords: {
+      triad: [
+        { name: "C", notes: [48, 60, 64, 67], roman: "I" },
+        { name: "Fm", notes: [41, 53, 56, 60], roman: "iv" },
+        { name: "C", notes: [48, 60, 64, 67], roman: "I" },
+        { name: "A\u266d", notes: [44, 56, 60, 63], roman: "\u266dVI" },
+      ],
+      seventh: [
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "Imaj7" },
+        { name: "Fm7", notes: [41, 53, 56, 60, 63], roman: "iv7" },
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "Imaj7" },
+        { name: "A\u266dmaj7", notes: [44, 56, 60, 63, 67], roman: "\u266dVImaj7" },
+      ],
+    },
+    triadNote: "The raw triad makes I \u2192 iv feel like a door opening to another world. The A\u266d in Fm (where you expected A) is a small pitch change but seismic emotionally. Theatrical \u2014 the moment a character sees something wondrous.",
+    seventhNote: "Adding maj7 to C and A\u266d creates a thread connecting all four chords. The 7ths turn a theatrical gesture into something more haunting \u2014 less \u2018behold!\u2019 and more \u2018lost in wonder.\u2019",
+    theory: "The iv (F minor) is borrowed from C minor. In C major, IV is F major (F-A-C). Borrowing gives Fm (F-A\u266d-C). That single note change (A \u2192 A\u266d) shifts the entire color. The \u266dVI deepens this by pulling further into the parallel minor.",
+    color: "#4A7A9B", duration: 2.0,
+  },
+  {
+    id: "otherworld-tritone", emotion: "Otherworldly", name: "The Cosmic Leap",
+    description: "A tritone apart \u2014 the maximum harmonic distance \u2014 evoking vastness, alien beauty, and cosmic wonder.",
+    composer: "Various", film: "Sci-fi & space scores",
+    chords: {
+      triad: [
+        { name: "C", notes: [48, 60, 64, 67], roman: "I" },
+        { name: "F\u266fm", notes: [42, 54, 57, 61], roman: "\u266fiv" },
+        { name: "C", notes: [48, 60, 64, 67], roman: "I" },
+        { name: "F\u266fm", notes: [42, 54, 57, 61], roman: "\u266fiv" },
+      ],
+      seventh: [
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "Imaj7" },
+        { name: "F\u266fm9", notes: [42, 54, 57, 61, 66], roman: "\u266fiv9" },
+        { name: "Cmaj9", notes: [48, 60, 64, 67, 71, 74], roman: "Imaj9" },
+        { name: "F\u266fm(maj7)", notes: [42, 54, 57, 61, 65], roman: "\u266fiv(maj7)" },
+      ],
+    },
+    triadNote: "The bare tritone leap has nowhere to hide \u2014 these keys share no common tones. This starkness feels truly extraterrestrial. A shock each time. Use triads for genuine disorientation.",
+    seventhNote: "Extensions create bridges. Cmaj7 contains B, F\u266fm contains E \u2014 close neighbors the ear can follow. The m(maj7) on F\u266f is unsettling and beautiful. Extensions make the impossible leap feel inevitable rather than jarring.",
+    theory: "The tritone divides the octave exactly in half \u2014 the most unstable interval. Medieval theorists called it \u2018diabolus in musica.\u2019 In film, it signals normal rules don\u2019t apply. Adding 7ths smooths the transition when composers want wonder rather than shock.",
+    color: "#3D6E91", duration: 2.4,
+  },
+  {
+    id: "otherworld-extended", emotion: "Otherworldly", name: "The Portal Opens",
+    description: "A 6-chord journey through increasingly distant keys, connected by common tones \u2014 the harmonic equivalent of passing through a gateway into another world and finding it beautiful.",
+    composer: "Howard Shore, Joe Hisaishi", film: "Lord of the Rings, Spirited Away, Arrival",
+    chords: {
+      triad: [
+        { name: "C", notes: [48, 60, 64, 67], roman: "I" },
+        { name: "A\u266d", notes: [44, 56, 60, 63], roman: "\u266dVI" },
+        { name: "Fm", notes: [41, 53, 56, 60], roman: "iv" },
+        { name: "D\u266d", notes: [49, 61, 65, 68], roman: "\u266dII" },
+        { name: "B\u266dm", notes: [46, 58, 61, 65], roman: "\u266dvii" },
+        { name: "C", notes: [48, 60, 64, 67, 72], roman: "I" },
+      ],
+      seventh: [
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "Imaj7" },
+        { name: "A\u266dmaj7", notes: [44, 56, 60, 63, 67], roman: "\u266dVImaj7" },
+        { name: "Fm9", notes: [41, 53, 56, 60, 67], roman: "iv9" },
+        { name: "D\u266dmaj7", notes: [49, 61, 65, 68, 72], roman: "\u266dIImaj7" },
+        { name: "B\u266dm7", notes: [46, 58, 61, 65, 68], roman: "\u266dvii7" },
+        { name: "Cmaj9", notes: [48, 60, 64, 67, 71, 74], roman: "Imaj9" },
+      ],
+    },
+    triadNote: "Each chord steps further from home: \u266dVI is a chromatic mediant away, iv is borrowed from the parallel minor, \u266dII is Neapolitan territory, and \u266dvii pulls us to the most distant point. Then C returns \u2014 home again, but voiced higher, transformed by the journey. Each transition works because neighboring chords share at least one common tone.",
+    seventhNote: "The 7ths create a luminous thread through distant keys. A\u266dmaj7 contains G, connecting to C. Fm9 adds G as well, maintaining the link. D\u266dmaj7 introduces C as its maj7, which IS the tonic note \u2014 home is hidden inside the most alien chord. B\u266dm7 contains D\u266d and A\u266d, linking back. The final Cmaj9 blooms with the added D, completing the transformation.",
+    theory: "This progression spirals through the flat side of the key, each chord borrowing from a more distant key: C major \u2192 A\u266d major (from C minor) \u2192 F minor (from C minor) \u2192 D\u266d major (Neapolitan, from C minor) \u2192 B\u266d minor (from D\u266d). The journey traces a path of descending major 3rds and minor 3rds. The return to C feels like an act of magic because we\u2019ve traveled so far harmonically that arriving home again seems impossible \u2014 yet common tones made each step feel natural.",
+    color: "#2D5A78", duration: 1.7,
+  },
+
+  // ========= BITTERSWEET HOPE =========
+  {
+    id: "bitter-picardy", emotion: "Bittersweet Hope", name: "The Picardy Farewell",
+    description: "A minor progression that unexpectedly resolves to a major chord at the end \u2014 the Picardy third. Sorrow that finds light. The sound of letting go with grace.",
+    composer: "Michael Giacchino, Alexandre Desplat", film: "Up, The Grand Budapest Hotel",
+    chords: {
+      triad: [
+        { name: "Am", notes: [45, 57, 60, 64], roman: "i" },
+        { name: "Dm", notes: [50, 62, 65, 69], roman: "iv" },
+        { name: "E", notes: [40, 52, 56, 59, 64], roman: "V" },
+        { name: "A", notes: [45, 57, 61, 64, 69], roman: "I" },
+      ],
+      seventh: [
+        { name: "Am9", notes: [45, 57, 60, 64, 71], roman: "i9" },
+        { name: "Dm7", notes: [50, 62, 65, 69, 72], roman: "iv7" },
+        { name: "E7", notes: [40, 52, 56, 59, 62], roman: "V7" },
+        { name: "Amaj7", notes: [45, 57, 61, 64, 68], roman: "Imaj7" },
+      ],
+    },
+    triadNote: "Three chords of pure minor sadness, then the final chord switches to A major \u2014 the C becomes C\u266f and everything opens up. That single raised note is like sunlight through stained glass at a funeral. The surprise is gentle, not jarring.",
+    seventhNote: "Am9 is open and aching. Dm7 deepens the sorrow. E7\u2019s tritone creates fierce longing. Then Amaj7 resolves with its C\u266f AND G\u266f \u2014 the major 7th adds warmth on top of the Picardy surprise. It\u2019s not just hope, it\u2019s peace after pain.",
+    theory: "The Picardy third dates to the Renaissance \u2014 ending a minor piece on a major chord. The raised 3rd (C\u266f instead of C) transforms the tonic from sorrowful to radiant. It works because the V chord (E major, containing G\u266f) already introduced a raised note via harmonic minor, so the ear is primed for brightness. The final major chord feels earned, not imposed.",
+    color: "#B89860", duration: 2.2,
+  },
+  {
+    id: "bitter-borrowed", emotion: "Bittersweet Hope", name: "The Memory of Light",
+    description: "A major key progression that borrows from its parallel minor \u2014 hope that carries the weight of what was lost. Used when a character remembers joy they can never return to.",
+    composer: "Thomas Newman, Joe Hisaishi", film: "American Beauty, Spirited Away",
+    chords: {
+      triad: [
+        { name: "C", notes: [48, 60, 64, 67], roman: "I" },
+        { name: "Fm", notes: [41, 53, 56, 60], roman: "iv" },
+        { name: "G", notes: [43, 55, 59, 62, 67], roman: "V" },
+        { name: "Am", notes: [45, 57, 60, 64], roman: "vi" },
+        { name: "F", notes: [41, 53, 57, 60, 65], roman: "IV" },
+        { name: "C", notes: [48, 60, 64, 67, 72], roman: "I" },
+      ],
+      seventh: [
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "Imaj7" },
+        { name: "Fm9", notes: [41, 53, 56, 60, 67], roman: "iv9" },
+        { name: "G7", notes: [43, 55, 59, 62, 65], roman: "V7" },
+        { name: "Am7", notes: [45, 57, 60, 64, 67], roman: "vi7" },
+        { name: "Fmaj7", notes: [41, 53, 57, 60, 64], roman: "IVmaj7" },
+        { name: "Cmaj9", notes: [48, 60, 64, 67, 71, 74], roman: "Imaj9" },
+      ],
+    },
+    triadNote: "We start in bright C major, then Fm (borrowed from C minor) casts a shadow \u2014 the A\u266d where you expected A is a single note of sadness inside hope. G lifts again, but Am acknowledges loss. F provides warmth, and C returns \u2014 but we\u2019ve been changed by the Fm. We can\u2019t unhear that shadow.",
+    seventhNote: "Cmaj7\u2019s B creates a shimmering opening. Fm9 with its added G is extraordinarily poignant \u2014 the G belongs to C major, so it\u2019s a fragment of home trapped inside the borrowed chord. Am7 is gentle grief. The final Cmaj9 has both the original shimmer and a new openness. Hope that has integrated its sadness.",
+    theory: "The iv chord (Fm) is the emotional engine. Borrowed from C minor, it contains A\u266d \u2014 a half step below the A natural in C major. This creates what music theorists call \u2018modal mixture\u2019 or \u2018modal interchange.\u2019 The coexistence of major and minor in one phrase mirrors the coexistence of hope and sadness in one feeling. Newman and Hisaishi both build entire scores around this technique.",
+    color: "#A88848", duration: 1.8,
+  },
+  {
+    id: "bitter-dorian", emotion: "Bittersweet Hope", name: "The Quiet Courage",
+    description: "Dorian mode \u2014 minor with a raised 6th that adds a glimmer of major. Not fully sad, not fully hopeful. The sound of carrying on despite everything.",
+    composer: "Hans Zimmer, Ryuichi Sakamoto", film: "Interstellar, The Revenant, Arrival",
+    chords: {
+      triad: [
+        { name: "Dm", notes: [50, 62, 65, 69], roman: "i" },
+        { name: "G", notes: [43, 55, 59, 62, 67], roman: "IV" },
+        { name: "Am", notes: [45, 57, 60, 64], roman: "v" },
+        { name: "C", notes: [48, 60, 64, 67], roman: "VII" },
+        { name: "Dm", notes: [50, 62, 65, 69], roman: "i" },
+      ],
+      seventh: [
+        { name: "Dm9", notes: [50, 62, 65, 69, 76], roman: "i9" },
+        { name: "Gmaj7", notes: [43, 55, 59, 62, 66], roman: "IVmaj7" },
+        { name: "Am7", notes: [45, 57, 60, 64, 67], roman: "v7" },
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "VIImaj7" },
+        { name: "Dm(add9)", notes: [50, 62, 65, 69, 76], roman: "i(add9)" },
+      ],
+    },
+    triadNote: "D Dorian\u2019s raised 6th (B natural instead of B\u266d) lives inside the G major chord and gives the whole progression its quiet determination. The IV chord in a minor key is inherently hopeful \u2014 it doesn\u2019t exist in natural minor. Am is reflective. C opens a window. Returning to Dm accepts the reality but with dignity.",
+    seventhNote: "Dm9 is vast and open \u2014 the 9th (E) adds a searching quality. Gmaj7 with its F\u266f glows with restrained warmth. Am7 is soft resignation. Cmaj7 with B natural is the most hopeful moment. The final Dm(add9) returns to minor but keeps the openness \u2014 sadness that has room for hope inside it.",
+    theory: "Dorian mode (D-E-F-G-A-B-C) differs from natural minor by one note: B natural instead of B\u266d. That B appears in the G major chord (G-B-D) and in Cmaj7. It\u2019s the reason Dorian sounds wistful rather than despairing \u2014 there\u2019s always a glimmer. Zimmer chose Dorian for Interstellar\u2019s emotional core precisely because the story is about love persisting through impossible loss. The mode IS bittersweet hope, harmonically encoded.",
+    color: "#C8A050", duration: 1.9,
+  },
+
+  // ========= MYSTERY & INTRIGUE =========
+  {
+    id: "mystery-wholetone", emotion: "Mystery", name: "The Floating Clue",
+    description: "The whole-tone scale \u2014 every note a whole step apart, no half steps, no gravity. A scale with no home, perfect for puzzles and hidden agendas.",
+    composer: "Hans Zimmer, Alexandre Desplat", film: "Sherlock Holmes, The Imitation Game",
+    chords: {
+      triad: [
+        { name: "C+", notes: [48, 60, 64, 68], roman: "I+" },
+        { name: "D+", notes: [50, 62, 66, 70], roman: "II+" },
+        { name: "E+", notes: [52, 64, 68, 72], roman: "III+" },
+        { name: "C+", notes: [48, 60, 64, 68], roman: "I+" },
+      ],
+      seventh: [
+        { name: "C7\u266f5", notes: [48, 60, 64, 68, 70], roman: "I7\u266f5" },
+        { name: "D7\u266f5", notes: [50, 62, 66, 70, 72], roman: "II7\u266f5" },
+        { name: "E7\u266f5", notes: [52, 64, 68, 72, 74], roman: "III7\u266f5" },
+        { name: "C9\u266f5", notes: [48, 60, 64, 68, 70, 74], roman: "I9\u266f5" },
+      ],
+    },
+    triadNote: "Every chord is augmented \u2014 built from two major thirds, dividing the octave into three equal parts. Like the diminished chord\u2019s four-way symmetry, the augmented chord\u2019s three-way symmetry means no note feels like home. The whole-tone scale these come from has the same quality: directionless, floating, inscrutable.",
+    seventhNote: "The dominant 7th with raised 5th is Debussy\u2019s signature chord. The \u266d7 wants to resolve downward, but the \u266f5 pulls upward \u2014 contradictory forces that cancel out, leaving the chord suspended in uncertainty. Perfect for the moment a detective notices something everyone else missed.",
+    theory: "The whole-tone scale (C-D-E-F\u266f-G\u266f-A\u266f) contains only one type of interval: the whole step. No half steps means no leading tones, no dominant function, no pull toward resolution. Debussy introduced this to Western music; film composers inherited it for scenes of ambiguity and intellectual unease.",
+    color: "#8B7EC8", duration: 2.0,
+  },
+  {
+    id: "mystery-suspension", emotion: "Mystery", name: "The Unanswered Question",
+    description: "Suspended chords that refuse to resolve \u2014 the 4th hangs where the 3rd should be, creating permanent anticipation. We never learn if the chord is major or minor.",
+    composer: "Thomas Newman, Trent Reznor", film: "Skyfall, The Social Network, Road to Perdition",
+    chords: {
+      triad: [
+        { name: "Csus4", notes: [48, 60, 65, 67], roman: "Isus4" },
+        { name: "A\u266dsus4", notes: [44, 56, 61, 63], roman: "\u266dVIsus4" },
+        { name: "Csus2", notes: [48, 60, 62, 67], roman: "Isus2" },
+        { name: "Fsus4", notes: [41, 53, 58, 60], roman: "IVsus4" },
+      ],
+      seventh: [
+        { name: "C7sus4", notes: [48, 60, 65, 67, 70], roman: "I7sus4" },
+        { name: "A\u266d7sus4", notes: [44, 56, 61, 63, 66], roman: "\u266dVI7sus4" },
+        { name: "Cmaj7sus2", notes: [48, 60, 62, 67, 71], roman: "Imaj7sus2" },
+        { name: "F7sus4", notes: [41, 53, 58, 60, 63], roman: "IV7sus4" },
+      ],
+    },
+    triadNote: "By replacing the 3rd with the 4th (sus4) or 2nd (sus2), we strip the chord of its identity \u2014 it\u2019s neither major nor minor. The ear waits for the 3rd to appear and it never does. Newman builds entire cues from suspended chords, creating a world of permanent open questions.",
+    seventhNote: "Adding 7ths to suspended chords creates even more ambiguity. C7sus4 has both the 4th (F) and \u266d7th (B\u266d) \u2014 two notes that want to move but can\u2019t. Cmaj7sus2 has the 2nd (D) and major 7th (B) creating a wide, open voicing that suggests knowledge just out of reach.",
+    theory: "Suspended chords exploit the expectation that the 3rd will define a chord as happy (major) or sad (minor). By withholding this information, the composer creates harmonic ambiguity that mirrors narrative ambiguity. The A\u266dsus4 is a chromatic mediant away from C, adding harmonic distance to the suspense.",
+    color: "#7B6EB8", duration: 2.3,
+  },
+  {
+    id: "mystery-chromdesc", emotion: "Mystery", name: "The Hidden Pattern",
+    description: "A chromatic descent through unrelated chords \u2014 each step reveals another piece of the puzzle. The bass walks steadily downward while chords shift above it, implying order beneath chaos.",
+    composer: "Alexandre Desplat, Alberto Iglesias", film: "Tinker Tailor Soldier Spy, The Constant Gardener",
+    chords: {
+      triad: [
+        { name: "Cm", notes: [48, 60, 63, 67], roman: "i" },
+        { name: "B", notes: [47, 59, 63, 66], roman: "VII\u266f" },
+        { name: "B\u266d", notes: [46, 58, 62, 65], roman: "\u266dVII" },
+        { name: "A", notes: [45, 57, 61, 64], roman: "VI\u266f" },
+        { name: "A\u266d", notes: [44, 56, 60, 63], roman: "\u266dVI" },
+      ],
+      seventh: [
+        { name: "Cm(maj7)", notes: [48, 60, 63, 67, 71], roman: "i(maj7)" },
+        { name: "Bmaj7", notes: [47, 59, 63, 66, 70], roman: "VII\u266fmaj7" },
+        { name: "B\u266bmaj7", notes: [46, 58, 62, 65, 69], roman: "\u266dVIImaj7" },
+        { name: "Amaj7", notes: [45, 57, 61, 64, 68], roman: "VI\u266fmaj7" },
+        { name: "A\u266dmaj7", notes: [44, 56, 60, 63, 67], roman: "\u266dVImaj7" },
+      ],
+    },
+    triadNote: "The bass descends chromatically (C-B-B\u266d-A-A\u266d) while the chord qualities alternate between minor and major. The steady descent creates inevitability \u2014 something is being uncovered. But the shifting qualities keep us uncertain whether the revelation will be good or bad.",
+    seventhNote: "Major 7ths on every chord create a thread of beauty through the descent \u2014 even as the harmony grows darker, there\u2019s elegance. Cm(maj7) is the James Bond chord. Each subsequent maj7 maintains sophistication \u2014 this is intellectual menace, not brute force. Desplat\u2019s specialty.",
+    theory: "Chromatic bass descent is one of the oldest tension devices in Western music (the Baroque lamento bass). Here it\u2019s applied to unrelated triads rather than diatonic chords. The chords share no key, but the stepwise bass creates logic the ear accepts. The alternation between major and minor chords on chromatic roots is deeply unsettling because we can\u2019t predict what quality comes next.",
+    color: "#9A8CD0", duration: 2.0,
+  },
+
+  // ========= NOSTALGIA & YEARNING =========
+  {
+    id: "nostalgia-plagal", emotion: "Nostalgia", name: "The Amen Cadence",
+    description: "The plagal cadence (IV\u2192I) \u2014 the church \u2018Amen.\u2019 Warmer and more settled than V\u2192I. The sound of returning to a place you once belonged, knowing it\u2019s changed.",
+    composer: "Thomas Newman, Max Richter", film: "Finding Nemo, The Leftovers, WALL-E",
+    chords: {
+      triad: [
+        { name: "C", notes: [48, 60, 64, 67], roman: "I" },
+        { name: "F", notes: [41, 53, 57, 60, 65], roman: "IV" },
+        { name: "C", notes: [48, 60, 64, 67], roman: "I" },
+        { name: "Fm", notes: [41, 53, 56, 60], roman: "iv" },
+      ],
+      seventh: [
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "Imaj7" },
+        { name: "Fmaj9", notes: [41, 53, 57, 60, 64, 67], roman: "IVmaj9" },
+        { name: "Cmaj9", notes: [48, 60, 64, 67, 71, 74], roman: "Imaj9" },
+        { name: "Fm9", notes: [41, 53, 56, 60, 67], roman: "iv9" },
+      ],
+    },
+    triadNote: "IV\u2192I is gentle resolution \u2014 settling rather than arriving. The third time, IV becomes iv (F minor, borrowed from the parallel minor), and the A\u266d where A was expected is the ache of nostalgia: this isn\u2019t quite the home you remember.",
+    seventhNote: "Fmaj9 is one of the most beautiful chords in music \u2014 expansive, warm, and full. Cmaj9 resolves with a shimmer. Then Fm9 introduces A\u266d while keeping G (the common tone), making the borrowed chord heartbreaking rather than jarring. The 9ths add the haze of memory.",
+    theory: "The plagal cadence avoids the leading-tone tension of V\u2192I. Instead of urgency, it creates gentle settling. The IV\u2192iv\u2192I pattern (major subdominant becoming minor) is the quintessential nostalgia device: you return home twice, and the second time something has changed irreversibly.",
+    color: "#C4956A", duration: 2.2,
+  },
+  {
+    id: "nostalgia-descending", emotion: "Nostalgia", name: "The Fading Photograph",
+    description: "A descending melodic line over static or gently shifting chords \u2014 the musical equivalent of watching a memory slowly recede. Each step down is time passing.",
+    composer: "Michael Giacchino, Gustavo Santaolalla", film: "Up (opening montage), Brokeback Mountain",
+    chords: {
+      triad: [
+        { name: "G", notes: [43, 55, 59, 62, 67], roman: "I" },
+        { name: "G/F\u266f", notes: [42, 55, 59, 62, 67], roman: "I/7" },
+        { name: "Em", notes: [40, 52, 55, 59, 64], roman: "vi" },
+        { name: "C", notes: [48, 60, 64, 67], roman: "IV" },
+        { name: "D", notes: [50, 62, 66, 69], roman: "V" },
+      ],
+      seventh: [
+        { name: "Gmaj7", notes: [43, 55, 59, 62, 66], roman: "Imaj7" },
+        { name: "Gmaj7/F\u266f", notes: [42, 55, 59, 62, 66], roman: "Imaj7/7" },
+        { name: "Em7", notes: [40, 52, 55, 59, 62], roman: "vi7" },
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "IVmaj7" },
+        { name: "D7", notes: [50, 62, 66, 69, 72], roman: "V7" },
+      ],
+    },
+    triadNote: "The bass descends stepwise: G\u2192F\u266f\u2192E\u2192C. The first move (G to G/F\u266f) is tiny \u2014 same chord, bass drops a half step \u2014 but it starts a gentle collapse. Em is where the nostalgia hits: the relative minor reveals the sadness inside the happy key. V at the end wants to cycle back, but we know it won\u2019t be the same.",
+    seventhNote: "Gmaj7\u2019s F\u266f appears in the bass of the next chord, creating seamless descent. Em7 is soft and open. Cmaj7 glows with warmth. D7\u2019s tritone creates gentle pull. Every chord sounds like it\u2019s dissolving into the next \u2014 memory blurring into memory.",
+    theory: "Descending bass lines create a sense of time passing and loss of energy \u2014 the musical equivalent of entropy. Giacchino used this technique in the famous \u2018Married Life\u2019 montage from Up to compress an entire lifetime into four minutes. The bass descent gives narrative direction: we\u2019re moving inexorably away from something.",
+    color: "#B48558", duration: 2.0,
+  },
+  {
+    id: "nostalgia-mixolydian", emotion: "Nostalgia", name: "The Golden Hour",
+    description: "Mixolydian with a warm \u266dVII creating a sense of timelessness \u2014 the sound of a perfect moment that you know will end. Late afternoon light in musical form.",
+    composer: "Joe Hisaishi, Jonny Greenwood", film: "My Neighbor Totoro, Phantom Thread",
+    chords: {
+      triad: [
+        { name: "G", notes: [43, 55, 59, 62, 67], roman: "I" },
+        { name: "F", notes: [41, 53, 57, 60, 65], roman: "\u266dVII" },
+        { name: "Am", notes: [45, 57, 60, 64], roman: "ii" },
+        { name: "C", notes: [48, 60, 64, 67], roman: "IV" },
+        { name: "G", notes: [43, 55, 59, 62, 67], roman: "I" },
+      ],
+      seventh: [
+        { name: "Gmaj7", notes: [43, 55, 59, 62, 66], roman: "Imaj7" },
+        { name: "Fmaj7", notes: [41, 53, 57, 60, 64], roman: "\u266dVIImaj7" },
+        { name: "Am9", notes: [45, 57, 60, 64, 71], roman: "ii9" },
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "IVmaj7" },
+        { name: "G6/9", notes: [43, 55, 59, 62, 64, 69], roman: "I6/9" },
+      ],
+    },
+    triadNote: "The F major (\u266dVII) is what gives Mixolydian its nostalgic quality \u2014 the lowered 7th (F instead of F\u266f) removes the forward drive of the leading tone, so the music feels suspended in time rather than progressing. Am adds gentle reflection. The return to G feels like accepting that the moment is passing.",
+    seventhNote: "Fmaj7 contains E \u2014 a common tone with both G and Am, threading the chords together smoothly. Am9 adds B, connecting back to G. The final G6/9 (with added E and A) is one of the most complete, restful chords possible \u2014 every tension resolved, but with the \u266dVII\u2019s memory still lingering.",
+    theory: "Mixolydian\u2019s \u266d7 eliminates dominant function, so cadences feel like settling rather than resolving. This creates musical time that doesn\u2019t push forward \u2014 it dwells. Combined with major tonality, the result is warmth without urgency: the sonic definition of nostalgia. Hisaishi uses this constantly for Miyazaki\u2019s pastoral scenes.",
+    color: "#D4A570", duration: 1.9,
+  },
+
+  // ========= MENACE & VILLAINY =========
+  {
+    id: "menace-imperial", emotion: "Menace", name: "The Imperial March",
+    description: "Minor key with chromatic bass descent and \u266dVI power \u2014 the template Williams created for Darth Vader and every cinematic villain since. Authority and threat combined.",
+    composer: "John Williams", film: "Star Wars (Empire Strikes Back)",
+    chords: {
+      triad: [
+        { name: "Gm", notes: [43, 55, 58, 62], roman: "i" },
+        { name: "E\u266d", notes: [51, 63, 67, 70], roman: "\u266dVI" },
+        { name: "D", notes: [50, 62, 66, 69], roman: "V" },
+        { name: "Gm", notes: [43, 55, 58, 62, 67], roman: "i" },
+      ],
+      seventh: [
+        { name: "Gm(add9)", notes: [43, 55, 58, 62, 69], roman: "i(add9)" },
+        { name: "E\u266dmaj7", notes: [51, 63, 67, 70, 74], roman: "\u266dVImaj7" },
+        { name: "D7", notes: [50, 62, 66, 69, 72], roman: "V7" },
+        { name: "Gm(add9)", notes: [43, 55, 58, 62, 69], roman: "i(add9)" },
+      ],
+    },
+    triadNote: "Gm is martial and cold. E\u266d (\u266dVI) opens with dark grandeur \u2014 it\u2019s the relative major, so it contains all the notes of G minor but reframed as power. D major (V with raised F\u266f) creates the leading tone that pulls back to Gm with ruthless inevitability. This is authority, not chaos.",
+    seventhNote: "Gm(add9) with A adds an unexpected brightness inside the darkness \u2014 the villain\u2019s charisma. E\u266dmaj7 adds D, which is the dominant of Gm, embedding threat inside the grandeur. D7\u2019s tritone (F\u266f\u2013C) is merciless in its pull back to tonic.",
+    theory: "The \u266dVI chord is the villain\u2019s chord. In Gm, E\u266d major contains B\u266d, E\u266d, and G \u2014 the same notes as Gm minus the D. This overlap means it sounds simultaneously familiar and distorted. Williams\u2019 genius was pairing this with a march rhythm \u2014 the harmonic menace is structured and disciplined, not wild.",
+    color: "#D05050", duration: 1.6,
+  },
+  {
+    id: "menace-phrygdom", emotion: "Menace", name: "The Dark Throne",
+    description: "Phrygian dominant \u2014 the \u2018exotic evil\u2019 scale with its raised 3rd over a \u266d2. Creates the sound of ancient, calculated menace and dark royalty.",
+    composer: "Ramin Djawadi, Howard Shore", film: "Game of Thrones, Lord of the Rings (Mordor)",
+    chords: {
+      triad: [
+        { name: "E", notes: [40, 52, 56, 59, 64], roman: "I" },
+        { name: "Fm", notes: [41, 53, 56, 60], roman: "\u266dii" },
+        { name: "D\u266d", notes: [49, 61, 65, 68], roman: "\u266dVII" },
+        { name: "E", notes: [40, 52, 56, 59, 64], roman: "I" },
+      ],
+      seventh: [
+        { name: "E7", notes: [40, 52, 56, 59, 62], roman: "I7" },
+        { name: "Fm(maj7)", notes: [41, 53, 56, 60, 64], roman: "\u266dii(maj7)" },
+        { name: "D\u266dmaj7", notes: [49, 61, 65, 68, 72], roman: "\u266dVIImaj7" },
+        { name: "E7", notes: [40, 52, 56, 59, 62], roman: "I7" },
+      ],
+    },
+    triadNote: "Phrygian dominant makes the I chord major (E major) while keeping the \u266d2 (F natural). The E\u2192F half-step is the darkest interval in the scale. Fm over E creates maximum friction \u2014 a half-step bass movement where every note clashes. D\u266d descends to provide dark grandeur before the menacing tonic returns.",
+    seventhNote: "E7 as a dominant chord with no resolution \u2014 it IS the tonic, creating permanent tension. Fm(maj7) contains E, which is the root of our tonic \u2014 the villain\u2019s presence haunts even the neighboring chords. D\u266dmaj7 has that same eerie beauty: dark power wearing an elegant mask.",
+    theory: "Phrygian dominant (E-F-G\u266f-A-B-C-D) is the 5th mode of A harmonic minor. Its defining feature: major 3rd (G\u266f) with \u266d2 (F). This creates an augmented 2nd interval (F\u2192G\u266f) that sounds exotic to Western ears. The I chord is a dominant 7th that never resolves, because it IS the tonic \u2014 permanent instability as home base.",
+    color: "#C03838", duration: 1.8,
+  },
+  {
+    id: "menace-tritone-sub", emotion: "Menace", name: "The Joker's Grin",
+    description: "Tritone substitutions \u2014 replacing expected chords with ones a tritone away. The harmonic equivalent of a villain who does the opposite of what you expect, and it somehow works.",
+    composer: "Hans Zimmer, Jonny Greenwood", film: "The Dark Knight, There Will Be Blood",
+    chords: {
+      triad: [
+        { name: "Cm", notes: [48, 60, 63, 67], roman: "i" },
+        { name: "F\u266f", notes: [42, 54, 58, 61, 66], roman: "\u266fIV" },
+        { name: "Fm", notes: [41, 53, 56, 60], roman: "iv" },
+        { name: "B", notes: [47, 59, 63, 66], roman: "\u266fVII" },
+        { name: "Cm", notes: [48, 60, 63, 67], roman: "i" },
+      ],
+      seventh: [
+        { name: "Cm7", notes: [48, 60, 63, 67, 70], roman: "i7" },
+        { name: "F\u266f7", notes: [42, 54, 58, 61, 64], roman: "\u266fIV7" },
+        { name: "Fm7", notes: [41, 53, 56, 60, 63], roman: "iv7" },
+        { name: "B7", notes: [47, 59, 63, 66, 69], roman: "\u266fVII7" },
+        { name: "Cm(maj7)", notes: [48, 60, 63, 67, 71], roman: "i(maj7)" },
+      ],
+    },
+    triadNote: "F\u266f is a tritone from C \u2014 the most distant harmonic point. It lands where you expect a diatonic chord and shocks. Fm provides a moment of dark familiarity before B (another tritone sub) hits. Each tritone substitution is wrong and yet it works, mirroring a villain\u2019s twisted logic.",
+    seventhNote: "Dominant 7ths on the tritone subs are key \u2014 F\u266f7 shares the same tritone (A\u266f/B\u266d and E) as C7 would, so it resolves to the same places through different means. B7 does the same to Cm. The final Cm(maj7) is the James Bond chord: we\u2019re home, but corrupted.",
+    theory: "Tritone substitution works because two dominant 7th chords a tritone apart share the same tritone interval (their 3rd and \u266d7th are swapped). So F\u266f7 can replace C7 because they share the same resolution tendency through different notes. Zimmer uses this in The Dark Knight to make the Joker\u2019s theme feel like it follows rules \u2014 just not the ones you know.",
+    color: "#E04040", duration: 1.9,
+  },
+
+  // ========= WHIMSY & WONDER =========
+  {
+    id: "whimsy-lydian", emotion: "Whimsy", name: "The Enchanted Garden",
+    description: "Lydian mode with playful chromatic neighbor chords \u2014 the sound of discovering something magical and delightful. Not grand otherworldliness, but intimate, childlike wonder.",
+    composer: "Alexandre Desplat, Joe Hisaishi", film: "The Grand Budapest Hotel, Kiki\u2019s Delivery Service",
+    chords: {
+      triad: [
+        { name: "C", notes: [48, 60, 64, 67], roman: "I" },
+        { name: "D", notes: [50, 62, 66, 69], roman: "II" },
+        { name: "Am", notes: [45, 57, 60, 64], roman: "vi" },
+        { name: "D", notes: [50, 62, 66, 69], roman: "II" },
+      ],
+      seventh: [
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "Imaj7" },
+        { name: "D6", notes: [50, 62, 66, 69, 71], roman: "II6" },
+        { name: "Am7", notes: [45, 57, 60, 64, 67], roman: "vi7" },
+        { name: "D6", notes: [50, 62, 66, 69, 71], roman: "II6" },
+      ],
+    },
+    triadNote: "The II chord (D major in C) contains F\u266f \u2014 the Lydian raised 4th \u2014 creating that floating, sparkly quality. But unlike the epic Lydian Lift, here it bounces between I and II playfully, with vi providing a brief gentle landing. Light, charming, curious.",
+    seventhNote: "D6 contains B (the same note as Cmaj7\u2019s major 7th), creating a thread that makes the bouncing feel effortless. Am7 is a soft cushion. The overall effect is music-box-like: precise, delicate, and enchanting. Desplat uses voicings like these for his quirky, meticulously crafted scores.",
+    theory: "This uses Lydian\u2019s II chord but in a lighter context \u2014 shorter duration, playful rhythm. The Lydian \u266f4 here suggests curiosity rather than transcendence. The vi chord grounds the whimsy briefly before II lifts off again. It\u2019s the difference between flying and floating: same notes, different weight.",
+    color: "#5EAA80", duration: 1.4,
+  },
+  {
+    id: "whimsy-chromatic", emotion: "Whimsy", name: "The Curious Detour",
+    description: "Playful chromatic mediant movement \u2014 hopping between distantly related major chords that share just one note. Each jump is a surprise that delights rather than disorients.",
+    composer: "Danny Elfman, Michael Giacchino", film: "Edward Scissorhands, Ratatouille, The Incredibles",
+    chords: {
+      triad: [
+        { name: "C", notes: [48, 60, 64, 67], roman: "I" },
+        { name: "E", notes: [40, 52, 56, 59, 64], roman: "III\u266f" },
+        { name: "A\u266d", notes: [44, 56, 60, 63, 68], roman: "\u266dVI" },
+        { name: "C", notes: [48, 60, 64, 67, 72], roman: "I" },
+      ],
+      seventh: [
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "Imaj7" },
+        { name: "Emaj7", notes: [40, 52, 56, 59, 63], roman: "III\u266fmaj7" },
+        { name: "A\u266dmaj7", notes: [44, 56, 60, 63, 67], roman: "\u266dVImaj7" },
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "Imaj7" },
+      ],
+    },
+    triadNote: "C to E major: a giant leap (chromatic mediant up), but they share E. E to A\u266d: another giant leap (chromatic mediant down), sharing E\u266d/D\u266f. A\u266d back to C: they share C. Each jump is individually surprising but the return home feels inevitable. Elfman uses these hops to create his signature \u2018whimsical-but-slightly-off\u2019 sound.",
+    seventhNote: "Maj7ths add extra common tones, making each leap smoother: Cmaj7 and Emaj7 share both E and B. Emaj7 and A\u266dmaj7 share G\u266f/A\u266d. The 7ths turn surprise into elegance. Giacchino uses this for moments of wonder in Pixar films \u2014 a rat discovering a kitchen, a superhero taking flight.",
+    theory: "Chromatic mediants (chords a major 3rd apart) are the whimsy engine: far enough to surprise, close enough (via common tones) to charm. The cycle C\u2192E\u2192A\u266d divides the octave into three equal major thirds \u2014 the same symmetry as the augmented triad, but expressed as a progression rather than a chord. Symmetrical structures feel magical because they transcend normal key relationships.",
+    color: "#4E9A70", duration: 1.5,
+  },
+  {
+    id: "whimsy-modemix", emotion: "Whimsy", name: "The Toy Parade",
+    description: "Rapid mode mixing \u2014 bouncing between major and parallel minor chords within the same phrase. The musical equivalent of a jack-in-the-box: you know something\u2019s coming, and it\u2019s delightful every time.",
+    composer: "Danny Elfman, Dario Marianelli", film: "Pee-wee\u2019s Big Adventure, Charlie and the Chocolate Factory, Paddington",
+    chords: {
+      triad: [
+        { name: "C", notes: [48, 60, 64, 67], roman: "I" },
+        { name: "Cm", notes: [48, 60, 63, 67], roman: "i" },
+        { name: "F", notes: [41, 53, 57, 60, 65], roman: "IV" },
+        { name: "Fm", notes: [41, 53, 56, 60], roman: "iv" },
+        { name: "C", notes: [48, 60, 64, 67, 72], roman: "I" },
+      ],
+      seventh: [
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "Imaj7" },
+        { name: "Cm7", notes: [48, 60, 63, 67, 70], roman: "i7" },
+        { name: "Fmaj7", notes: [41, 53, 57, 60, 64], roman: "IVmaj7" },
+        { name: "Fm7", notes: [41, 53, 56, 60, 63], roman: "iv7" },
+        { name: "Cmaj7", notes: [48, 60, 64, 67, 71], roman: "Imaj7" },
+      ],
+    },
+    triadNote: "Each major chord immediately becomes its parallel minor: C\u2192Cm (E drops to E\u266d), F\u2192Fm (A drops to A\u266d). One note changes, the mood flips. It\u2019s a musical wink. The return to major C at the end is the punchline. Elfman practically invented this as a signature move.",
+    seventhNote: "Cmaj7 to Cm7 \u2014 the B drops to B\u266d along with E dropping to E\u266d. Two notes shift and the chord\u2019s entire personality changes. The 7ths make each flip smoother, almost sleight-of-hand. You hear the brightness dissolve into shadow and back so quickly it becomes playful rather than emotional.",
+    theory: "Parallel major/minor substitution (I\u2192i, IV\u2192iv) is the simplest form of modal mixture. What makes it whimsical rather than dramatic is speed and context: in a slow tempo, C\u2192Cm sounds bittersweet (the Mirror Shift in Otherworldly). At a quick tempo with staccato articulation, the same move sounds mischievous. Tempo and orchestration transform the same harmonic device entirely.",
+    color: "#6EBA90", duration: 1.3,
+  },
+];
+
+function midiToFreq(midi) {
+  return 440 * Math.pow(2, (midi - 69) / 12);
+}
+
+function CinematicChords() {
+  const [selectedEmotion, setSelectedEmotion] = useState("Hope");
+  const [voicing, setVoicing] = useState("triad");
+  const [tempo, setTempo] = useState(1.0);
+  const [activeProgression, setActiveProgression] = useState(null);
+  const [playingChordIndex, setPlayingChordIndex] = useState(-1);
+  const [expandedTheory, setExpandedTheory] = useState(null);
+  const audioCtxRef = useRef(null);
+  const playingRef = useRef(false);
+  const stopRef = useRef(false);
+  const nodesRef = useRef([]);
+  const tempoRef = useRef(1.0);
+
+  const getAudioCtx = useCallback(() => {
+    if (!audioCtxRef.current || audioCtxRef.current.state === "closed") {
+      audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtxRef.current.state === "suspended") audioCtxRef.current.resume();
+    return audioCtxRef.current;
+  }, []);
+
+  const playChord = useCallback((ctx, notes, duration, startTime) => {
+    const convolver = ctx.createConvolver();
+    const rate = ctx.sampleRate;
+    const len = rate * 3.5;
+    const impulse = ctx.createBuffer(2, len, rate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = impulse.getChannelData(ch);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.2);
+    }
+    convolver.buffer = impulse;
+    const reverbGain = ctx.createGain();
+    reverbGain.gain.value = 0.35;
+    convolver.connect(reverbGain);
+    reverbGain.connect(ctx.destination);
+    const dryGain = ctx.createGain();
+    dryGain.gain.value = 0.65;
+    dryGain.connect(ctx.destination);
+
+    notes.forEach((midi, i) => {
+      const types = i === 0 ? ["sine", "triangle"] : i < 3 ? ["triangle", "sine"] : ["sine", "sine"];
+      types.forEach((type, li) => {
+        const osc = ctx.createOscillator();
+        const env = ctx.createGain();
+        osc.type = type;
+        osc.frequency.value = midiToFreq(midi) * (1 + (li === 1 ? 0.002 : 0));
+        const baseVol = i === 0 ? 0.12 : i < notes.length - 1 ? 0.08 : 0.06;
+        const vol = li === 1 ? baseVol * 0.35 : baseVol;
+        env.gain.setValueAtTime(0, startTime);
+        env.gain.linearRampToValueAtTime(vol, startTime + Math.min(0.18, duration * 0.15));
+        env.gain.setValueAtTime(vol, startTime + Math.max(duration * 0.5, duration - 0.5));
+        env.gain.exponentialRampToValueAtTime(0.001, startTime + duration + 0.3);
+        osc.connect(env);
+        env.connect(dryGain);
+        env.connect(convolver);
+        osc.start(startTime);
+        osc.stop(startTime + duration + 0.5);
+        nodesRef.current.push(osc);
+      });
+    });
+  }, []);
+
+  const stopPlayback = useCallback(() => {
+    stopRef.current = true;
+    nodesRef.current.forEach((n) => { try { n.stop(); } catch (e) {} });
+    nodesRef.current = [];
+    playingRef.current = false;
+    setActiveProgression(null);
+    setPlayingChordIndex(-1);
+  }, []);
+
+  const playProgression = useCallback(async (prog) => {
+    if (playingRef.current) { stopPlayback(); await new Promise((r) => setTimeout(r, 150)); }
+    stopRef.current = false;
+    playingRef.current = true;
+    setActiveProgression(prog.id);
+    const ctx = getAudioCtx();
+    const chords = prog.chords[voicing];
+    let time = ctx.currentTime + 0.05;
+    for (let i = 0; i < chords.length; i++) {
+      if (stopRef.current) break;
+      const dur = prog.duration / tempoRef.current;
+      setPlayingChordIndex(i);
+      playChord(ctx, chords[i].notes, dur, time);
+      await new Promise((r) => setTimeout(r, dur * 1000));
+      time += dur;
+    }
+    if (!stopRef.current) await new Promise((r) => setTimeout(r, 600));
+    if (!stopRef.current) { playingRef.current = false; setActiveProgression(null); setPlayingChordIndex(-1); }
+  }, [getAudioCtx, playChord, voicing, stopPlayback]);
+
+  useEffect(() => {
+    return () => { stopRef.current = true; nodesRef.current.forEach((n) => { try { n.stop(); } catch (e) {} }); if (audioCtxRef.current) audioCtxRef.current.close(); };
+  }, []);
+
+  const emotions = Object.keys(EMOTION_CONFIG);
+  const cfg = EMOTION_CONFIG[selectedEmotion];
+  const accent = cfg.color;
+  const filtered = PROGRESSIONS.filter((p) => p.emotion === selectedEmotion);
+
+  return (
+    <div style={{ minHeight: "100vh", background: cfg.bg, color: "#e8e0d4", fontFamily: "'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif", padding: "40px 16px", transition: "background 0.8s ease" }}>
+      <div style={{ maxWidth: 740, margin: "0 auto" }}>
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 36 }}>
+          <div style={{ fontSize: 11, letterSpacing: 6, textTransform: "uppercase", color: accent, marginBottom: 14, transition: "color 0.5s" }}>Cinematic Chord Explorer</div>
+          <h1 style={{ fontSize: 34, fontWeight: 300, margin: 0, lineHeight: 1.2, color: "#f0ebe3" }}>The Sound of Emotion</h1>
+          <p style={{ fontSize: 13.5, color: "#9a9080", marginTop: 10, lineHeight: 1.6, maxWidth: 520, margin: "10px auto 0" }}>
+            Hear how film composers use chord relationships to evoke feelings. Toggle between triads and extensions to hear how voicing changes the emotional color.
+          </p>
+        </div>
+
+        {/* Emotion Tabs */}
+        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 6, marginBottom: 16 }}>
+          {emotions.map((em) => {
+            const active = selectedEmotion === em;
+            const c = EMOTION_CONFIG[em].color;
+            return (
+              <button key={em} onClick={() => { stopPlayback(); setSelectedEmotion(em); }}
+                style={{ padding: "7px 16px", border: `1px solid ${active ? c : "rgba(255,255,255,0.1)"}`, borderRadius: 100, background: active ? c + "18" : "transparent", color: active ? c : "#c0b8b0", fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", cursor: "pointer", transition: "all 0.4s", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                {em}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Voicing Toggle */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 32 }}>
+          <div style={{ display: "flex", alignItems: "center", background: "rgba(255,255,255,0.04)", borderRadius: 100, border: "1px solid rgba(255,255,255,0.08)", padding: 3 }}>
+            {[{ key: "triad", label: "Triads" }, { key: "seventh", label: "7ths & Extensions" }].map((v) => {
+              const active = voicing === v.key;
+              return (
+                <button key={v.key} onClick={() => { stopPlayback(); setVoicing(v.key); }}
+                  style={{ padding: "7px 18px", border: "none", borderRadius: 100, background: active ? accent + "25" : "transparent", color: active ? accent : "#c0b8b0", fontSize: 12, letterSpacing: 1, cursor: "pointer", transition: "all 0.3s", fontFamily: "inherit" }}>
+                  {v.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Tempo Control */}
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 14, marginBottom: 32 }}>
+          <span style={{ fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", color: "#9a9080" }}>Tempo</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 11, color: "#7a7268" }}>Slow</span>
+            <input
+              type="range"
+              min="0.4"
+              max="2.0"
+              step="0.1"
+              value={tempo}
+              onChange={(e) => { const v = parseFloat(e.target.value); setTempo(v); tempoRef.current = v; }}
+              style={{
+                width: 140,
+                height: 4,
+                appearance: "none",
+                WebkitAppearance: "none",
+                background: `linear-gradient(to right, ${accent}66, ${accent})`,
+                borderRadius: 4,
+                outline: "none",
+                cursor: "pointer",
+                accentColor: accent,
+              }}
+            />
+            <span style={{ fontSize: 11, color: "#7a7268" }}>Fast</span>
+          </div>
+          <span style={{ fontSize: 12, color: accent, minWidth: 36, textAlign: "center", fontVariantNumeric: "tabular-nums" }}>{tempo.toFixed(1)}x</span>
+        </div>
+
+        {/* Progressions */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          {filtered.map((prog) => {
+            const isActive = activeProgression === prog.id;
+            const isExpanded = expandedTheory === prog.id;
+            const chords = prog.chords[voicing];
+            return (
+              <div key={prog.id} style={{ background: isActive ? `linear-gradient(135deg, ${prog.color}18, ${prog.color}0a)` : "rgba(0,0,0,0.3)", border: `1px solid ${isActive ? prog.color + "60" : "rgba(255,255,255,0.18)"}`, borderRadius: 16, padding: "22px 22px 18px", transition: "all 0.4s", }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                  <div>
+                    <h2 style={{ margin: 0, fontSize: 20, fontWeight: 400, color: "#f0ebe3", letterSpacing: 0.3, display: "flex", alignItems: "center", gap: 8 }}>
+                      {prog.name}
+                      {chords.length > 4 && <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 100, background: prog.color + "15", color: prog.color, letterSpacing: 1, fontWeight: 400 }}>{chords.length} chords</span>}
+                    </h2>
+                    <div style={{ fontSize: 11, color: prog.color, marginTop: 3, letterSpacing: 0.8 }}>{prog.composer} \u2014 <em>{prog.film}</em></div>
+                  </div>
+                  <button onClick={() => isActive ? stopPlayback() : playProgression(prog)}
+                    style={{ width: 44, height: 44, borderRadius: "50%", border: `1.5px solid ${prog.color}`, background: isActive ? prog.color + "22" : "transparent", color: prog.color, fontSize: isActive ? 13 : 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.3s" }}>
+                    {isActive ? "\u25A0" : "\u25B6"}
+                  </button>
+                </div>
+
+                <p style={{ fontSize: 13, lineHeight: 1.65, color: "#a09888", margin: "10px 0 14px" }}>{prog.description}</p>
+
+                {/* Chord cards */}
+                <div style={{ display: "flex", gap: chords.length > 5 ? 3 : 5, marginBottom: 12, flexWrap: chords.length > 6 ? "wrap" : "nowrap" }}>
+                  {chords.map((chord, ci) => {
+                    const isPlaying = isActive && playingChordIndex === ci;
+                    const isLong = chords.length > 5;
+                    return (
+                      <div key={ci} style={{ flex: chords.length > 6 ? "0 0 calc(25% - 3px)" : 1, minWidth: 0, textAlign: "center", padding: isLong ? "8px 2px" : "10px 3px", borderRadius: 10, background: isPlaying ? prog.color + "20" : "rgba(255,255,255,0.025)", border: `1px solid ${isPlaying ? prog.color + "55" : "rgba(255,255,255,0.04)"}`, transition: "all 0.2s", transform: isPlaying ? "scale(1.04)" : "scale(1)" }}>
+                        <div style={{ fontSize: isLong ? 8.5 : 9.5, color: "#7a7268", letterSpacing: 1, textTransform: "uppercase", marginBottom: 3 }}>{chord.roman}</div>
+                        <div style={{ fontSize: isLong ? 13 : 15, fontWeight: 300, color: isPlaying ? prog.color : "#d0c8bc", transition: "color 0.2s", letterSpacing: 0.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{chord.name}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Voicing note */}
+                <div style={{ padding: "10px 14px", background: voicing === "triad" ? "rgba(200,180,140,0.05)" : "rgba(100,150,200,0.05)", borderRadius: 8, fontSize: 12, lineHeight: 1.7, color: "#a09888", marginBottom: 10, borderLeft: `2px solid ${voicing === "triad" ? "#8a7a60" : "#5a7a9a"}33` }}>
+                  <span style={{ fontSize: 9.5, letterSpacing: 2, textTransform: "uppercase", color: voicing === "triad" ? "#8a7a60" : "#5a7a9a" }}>{voicing === "triad" ? "Triad version" : "Extended version"}</span><br />
+                  {voicing === "triad" ? prog.triadNote : prog.seventhNote}
+                </div>
+
+                {/* Theory expand */}
+                <button onClick={() => setExpandedTheory(isExpanded ? null : prog.id)}
+                  style={{ background: "none", border: "none", color: prog.color, fontSize: 12, cursor: "pointer", padding: 0, fontFamily: "inherit", letterSpacing: 0.5, opacity: 0.9 }}>
+                  {isExpanded ? "Hide" : "Show"} deeper theory {isExpanded ? "\u2191" : "\u2193"}
+                </button>
+                {isExpanded && (
+                  <div style={{ marginTop: 10, padding: "12px 16px", background: "rgba(0,0,0,0.3)", borderRadius: 10, fontSize: 12.5, lineHeight: 1.8, color: "#b8b0a4", borderLeft: `3px solid ${prog.color}33` }}>
+                    {prog.theory}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Footer */}
+        <div style={{ textAlign: "center", marginTop: 36, fontSize: 11.5, color: "#5a5248", lineHeight: 1.7 }}>
+          {PROGRESSIONS.length} progressions across {emotions.length} emotions. Toggle Triads / 7ths to hear how voicing changes emotional character while harmonic structure stays the same.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(React.createElement(CinematicChords));
+  </script>
+</body>
+</html>
